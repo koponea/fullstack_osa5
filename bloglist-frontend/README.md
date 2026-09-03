@@ -1,6 +1,6 @@
 # Blogilistan frontend (bloglist-frontend)
 
-Fullstack -kurssin blogilista-tehtävien 5.X palautus
+Fullstack -kurssin blogilista-tehtävien 5.6 palautus
 
 Tässä osassa on otettu pohjaksi erikseen valmiina annettu osan 3 frontend, mutta se toteuttaa tietenkin kaikki edelliset funktionaaliset kohdat osasta__fullstack_osa3__ kuten myös ehdotettu mallivastauksen backend osasta __fullstack_osa4__. Joitakin tarkennuksia ja konffauksia omasta backend-toteutuksesta on saatettu lisätä näihin nyt kloonattuihin front- ja backendeihin.
 
@@ -9,7 +9,7 @@ Tehtävien vaatimukset on kuvattu kurssin sivuilla, https://fullstackopen.com/os
 ## 5: React-sovelluksen testaaminen, React Router
 
 - __5a: Kirjautuminen frontendissä__
-tehtävät 5.1-5.4, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien lisääminen.
+tehtävät 5.1-5.6, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien lisääminen, näkymän osien togglailua
 - __5b: props.children ja komponentin ref__
 - __5c: React-sovellusten testaaminen__
 - __5d: End to end -testaus__
