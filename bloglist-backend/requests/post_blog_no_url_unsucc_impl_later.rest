@@ -1,0 +1,8 @@
+POST http://localhost:3003/api/blogs
+content-type: application/json
+
+{
+    "title": "Rakenne ja alkeet 2",
+    "author": "Matti Luukkainen",
+    "likes": "100"
+}

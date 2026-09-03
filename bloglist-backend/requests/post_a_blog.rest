@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5henp6eiIsImlkIjoiNmE5NTcyZjI4ZGFkYzZmOTI1M2UxYjZkIiwiaWF0IjoxNzg4MTc5MjAwLCJleHAiOjE3ODgxODI4MDB9.72DJiaiQPtK9czR7woP30bINS0oUllGCVJgz8rCRTXg
+
+{
+    "title": "Rakenne ja alkeet Öytsis",
+    "author": "Matti K",
+    "url": "https://fullstackopn.com/osa4/rakenne_ja_alkeet3",
+    "likes": "64"
+}

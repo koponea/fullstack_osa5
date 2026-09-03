@@ -1,0 +1,6 @@
+node_modules
+.env
+
+# example files
+*_example.js
+*_example.test.js
