@@ -8,7 +8,7 @@ const blogStyle = {
   marginBottom: 5
 }
 
-const Blog = ({ blog, blogRef, onLikeClick }) => {
+const Blog = ({ blog, blogRef, onLike, onDelete }) => {
 
   return (
     < div style={blogStyle}>
@@ -16,11 +16,14 @@ const Blog = ({ blog, blogRef, onLikeClick }) => {
       {blog.title} {blog.author}
 
       <Togglable buttonLabel='view' hideLabel='hide' ref={blogRef} buttonPlacing='immediate'>
+
         <div>url: {blog.url}</div>
         <div>likes: {blog.likes ? blog.likes : 0}
-          <button onClick={onLikeClick} data-testid="like-button">like</button>
+          <button onClick={onLike} data-testid="like-button">like</button>
         </div>
         <div>{blog.creator}</div>
+  
+        <button onClick={onDelete}>remove</button>
 
       </Togglable>
 

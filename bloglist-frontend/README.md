@@ -9,8 +9,9 @@ Tehtävien vaatimukset on kuvattu kurssin sivuilla, https://fullstackopen.com/os
 ## 5: React-sovelluksen testaaminen, React Router
 
 - __5a: Kirjautuminen frontendissä__
-tehtävät 5.1-5.6, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien lisääminen, näkymän osien togglailua
+Tehtävät 5.1-5.4, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien lisääminen, kirjautuminen pysyvä ja notifikaatiot.
 - __5b: props.children ja komponentin ref__
+Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy vain tarvittaessa, likejen päivittely, muotoilua ja blogin poisto.
 - __5c: React-sovellusten testaaminen__
 - __5d: End to end -testaus__
 

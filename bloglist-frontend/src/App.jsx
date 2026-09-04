@@ -64,28 +64,29 @@ const App = () => {
     }
   }, [])
 
-  const addBlog = (event) => {
+  const addBlog = async (event) => {
     event.preventDefault()
-    logger.debug('button clicked, target:', event.target)
+    console.log('creator:', user.name)
     const blogObject = {
       title, author, url, user: user.id
     }
-    blogFormRef.current.toggleVisibility() // a bitof hacky to  call...
-    blogService
-      .create(blogObject)
-      .then(receivedBlog => {
-        logger.debug(receivedBlog)
-        notifyUser(`a new blog ${title} by ${author} added`)
-        setBlogs(blogs.concat(receivedBlog).sort((a,b) => b.likes - a.likes))
-        setUrl('')
-        setAuthor('')
-        setTitle('')
-      })
-      .catch(error =>
-        notifyUserOfError(
-          `The blog could be not be created, ${error}`
-        )
+    blogFormRef.current.toggleVisibility() // a bitof hacky to call...
+    const receivedBlog = await blogService.create(blogObject)
+    try {
+      logger.debug(receivedBlog)
+      notifyUser(`a new blog ${title} by ${author} added`)
+      setBlogs(blogs.concat(
+        { ...receivedBlog, creator: user.name }
+      ).sort((a, b) => b.likes - a.likes))
+      setUrl('')
+      setAuthor('')
+      setTitle('')
+    }
+    catch (error) {
+      notifyUserOfError(
+        `the blog could be not be created, ${error}`
       )
+    }
   }
 
   const handleUsername = (event) => {
@@ -97,7 +98,7 @@ const App = () => {
     setPassword(event.target.value)
   }
 
-  const handleOnLike = (event) => {
+  const handleLike = (event) => {
     blogService
       .update(event.id,
         { ...omit(event, ['creator']), likes: event.likes + 1 })
@@ -152,6 +153,33 @@ const App = () => {
       setPassword('')
     } catch (error) {
       notifyUserOfError(`problem on removing credentials, ${error}`)
+    }
+  }
+
+
+  const handleDelete = async (blog) => {
+    console.log('delete clicked on', blog.id)
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.creator} ?`)) {
+
+      try {
+        const status = await blogService.destroy(blog.id)
+        console.log('Delete person promise fulfilled', blog.title, status)
+        if ([200, 204, 404].includes(status)) {
+          console.log('Remove from fe', blog.id)
+          setBlogs(blogs.filter(b => b.id !== blog.id));
+          notifyUser(`Deleted ${blog.title}`);
+        }
+      } catch (error) {
+        if (error.status === 404)
+          notifyUser('already deleted')
+        else if (error.status === 403)
+           notifyUserOfError('delete not authorized')
+        else
+           notifyUserOfError(`could not delete entry, ${error}`)
+      }
+    } else {
+      console.log(`id ${blog.id}: ${blog.title} delete canceled`)
+      notifyUser(`Delete of ${blog.title} canceled`)
     }
   }
 
@@ -211,7 +239,9 @@ const App = () => {
               key={blog.id}
               blog={blog}
               blogRef={blogRef}
-              onLikeClick={()=> handleOnLike(blog)} />
+              onLike={() => handleLike(blog)}
+              onDelete={() => handleDelete(blog)}
+            />
           )}
         </div>
       )}
