@@ -28,11 +28,11 @@ const BlogForm = (props) => {
         </div>
 
         <div>
-          <label htmlFor="aurhorInput" >
+          <label htmlFor="authorInput" >
                         author:
             <input
               data-testid="author-input"
-              id="aurhorInput"
+              id="authorInput"
               value={author}
               onChange={({ target }) => setAuthor(target.value)}
             />
