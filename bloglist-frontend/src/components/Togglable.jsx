@@ -1,6 +1,12 @@
 import { useState, useImperativeHandle } from 'react'
 
-const Togglable = (props) => {
+const Togglable = ({
+    ref,
+    buttonPlacing = 'regular',
+    buttonLabel,
+    hideLabel = 'cancel',
+    children
+}) => {
     const [visible, setVisible] = useState(false)
 
     const hideWhenVisible = { display: visible ? 'none' : '' }
@@ -10,21 +16,31 @@ const Togglable = (props) => {
         setVisible(!visible)
     }
 
-    useImperativeHandle(props.ref, () => {
+    useImperativeHandle(ref, () => {
         return { toggleVisibility }
     })
 
-    return (
-        <div>
-            <div style={hideWhenVisible}>
-                <button onClick={toggleVisibility}>{props.buttonLabel}</button>
-            </div>
-            <div style={showWhenVisible}>
+    const showButton = buttonPlacing === 'regular' ?
+        <div style={hideWhenVisible}>
+            <button onClick={toggleVisibility}>{buttonLabel}</button>
+        </div> :
+        <button style={hideWhenVisible} onClick={toggleVisibility}>{buttonLabel}</button>
 
-                {props.children}
-                <button onClick={toggleVisibility}>cancel</button>
-            </div>
-        </div>
+    const dataWithHideButton = buttonPlacing === 'regular' ?
+        <div style={showWhenVisible}>
+            {children}
+            <button onClick={toggleVisibility}>{hideLabel}</button>
+        </div> :
+        <>
+            <button style={showWhenVisible} onClick={toggleVisibility}>{hideLabel}</button>
+            <div style={showWhenVisible} >{children}</div>
+        </>
+
+    return (
+        <>
+            {showButton}
+            {dataWithHideButton}
+        </>
     )
 }
 

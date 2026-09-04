@@ -7,6 +7,7 @@ import LoginForm from "./components/LoginForm"
 import BlogForm from "./components/BlogForm"
 import loginService from "./services/login"
 import logger from "../utils/logger"
+import { omit } from 'lodash'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -22,7 +23,7 @@ const App = () => {
 
   const eventHandler = receivedBlogzz => {
     // rekisteroi tapahtumankasittelija get-operaatiolle
-    logger.debug('promise fulfilled with', receivedBlogzz)
+    receivedBlogzz.forEach(el => el.creator =  el.user ? el.user.name : '');
     setBlogs(receivedBlogzz)
   }
 
@@ -41,11 +42,12 @@ const App = () => {
   }
 
   const blogFormRef = useRef()
+  const blogRef = useRef()
 
   useEffect(() => {
     logger.debug('effectissa, hookissa')
     blogService
-      .getAll()
+      .getAll() // sort somewhat later
       .then(eventHandler)
       .catch(error =>
         notifyUserOfError(`The blogs fetch not successful, ${error}`)
@@ -94,6 +96,27 @@ const App = () => {
     setPassword(event.target.value)
   }
 
+  const handleOnLike = (event) => {
+    blogService
+      .update(event.id,
+        { ...omit(event, ['creator']), likes: event.likes + 1 })
+      .then(updated => {
+            // the blogs will change orders. should sort,
+            // use splitting according to find and findindex
+            // and concat if wanted add-order. Though Rest.
+            setBlogs(
+              blogs
+                .filter(b => b.id !== updated.id)
+                .concat({...updated, creator: event.creator})
+            )
+            notifyUser(`the blog ${event.title} got a like`)
+          })
+      .catch(error => +
+        notifyUserOfError(
+          `The blog could be not be liked, ${error}`
+        )
+      )
+    }
 
   const handleLogin = async event => {
     event.preventDefault()
@@ -162,11 +185,9 @@ const App = () => {
           <h2>blogs</h2>
           <Notification message={errorMessage} />
           <Notification message={notificationMessage} notificationClass='notification' />
-          <p>
-            <div>{user.name} logged in
+          <div>{user.name} logged in
               <button onClick={handleLogout} data-testid="logout">logout</button>
-            </div>
-          </p>
+          </div>
           <Togglable buttonLabel='create new blog' ref={blogFormRef}>
             <BlogForm
               url={url}
@@ -184,7 +205,11 @@ const App = () => {
       {user && (
         <div>
           {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} />
+            <Blog
+              key={blog.id}
+              blog={blog}
+              blogRef={blogRef}
+              onLikeClick={()=> handleOnLike(blog)} />
           )}
         </div>
       )}
