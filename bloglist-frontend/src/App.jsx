@@ -23,7 +23,8 @@ const App = () => {
 
   const eventHandler = receivedBlogzz => {
     // rekisteroi tapahtumankasittelija get-operaatiolle
-    receivedBlogzz.forEach(el => el.creator =  el.user ? el.user.name : '');
+    receivedBlogzz.forEach(el => el.creator =  el.user ? el.user.name : '')
+    receivedBlogzz = receivedBlogzz.sort((a,b) => b.likes - a.likes);
     setBlogs(receivedBlogzz)
   }
 
@@ -47,7 +48,7 @@ const App = () => {
   useEffect(() => {
     logger.debug('effectissa, hookissa')
     blogService
-      .getAll() // sort somewhat later
+      .getAll()
       .then(eventHandler)
       .catch(error =>
         notifyUserOfError(`The blogs fetch not successful, ${error}`)
@@ -75,7 +76,7 @@ const App = () => {
       .then(receivedBlog => {
         logger.debug(receivedBlog)
         notifyUser(`a new blog ${title} by ${author} added`)
-        setBlogs(blogs.concat(receivedBlog))
+        setBlogs(blogs.concat(receivedBlog).sort((a,b) => b.likes - a.likes))
         setUrl('')
         setAuthor('')
         setTitle('')
@@ -108,6 +109,7 @@ const App = () => {
               blogs
                 .filter(b => b.id !== updated.id)
                 .concat({...updated, creator: event.creator})
+                .sort((a,b) => b.likes - a.likes)
             )
             notifyUser(`the blog ${event.title} got a like`)
           })
