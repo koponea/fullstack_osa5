@@ -22,7 +22,7 @@ const Blog = ({ blog, blogRef, onLike, onDelete }) => {
           <button onClick={onLike} data-testid="like-button">like</button>
         </div>
         <div>{blog.creator}</div>
-  
+
         <button onClick={onDelete}>remove</button>
 
       </Togglable>
