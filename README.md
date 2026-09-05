@@ -32,9 +32,9 @@ Tämä repositorio sisältää kurssin osan 5 tehtävien palautuksen (5.X) Teht�
 - Blogilista backend, step 2 (tehtävä 4.2), blogilistan backendin modulointi ja täydennetty myös virheenhallintaa, loggausta ja apikäsittelyä
 - Apufunktioita ja yksikkötestejä, stepit 1-5 (tehtävät 4.3-4.7*), dummy, total_likes, favourite_blog, most_bloggers ja most_likes -testit sekä kohdefunktiot
 
-#### 4b backendin testaaminen
+#### 4b backendin testaaminen, INTEGRAATIOTESTIT (API:sta be->db)
 
-- Blogilista UT: test_help.js lisäys myös 4a:n testidatat
+- Blogilista: test_help.js lisäys myös 4a:n testidatat
 - Blogilistan testit, stepit 1-5 (testi 4.8-4.12*) GET, POST ja 'id' attribuutti, default-arvo ja olemassaolovaatimus modelissa
 - Blogilistan laajennus: stepit 1-2 (testit 4.13-4.14*) DELETE, PUT ja testit
 
@@ -61,7 +61,7 @@ Tehtävät 5.1-5.4, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien li
 - __5b: props.children ja komponentin ref__
 Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy vain tarvittaessa, likejen päivittely, muotoilua ja blogin poisto.
 - __5c: React-sovellusten testaaminen__
-5.13-15: blogilistan testit, step1-3: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa
+5.13-16: blogilistan testit, step1-4: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa. BlogForm:in toiminta.
 - __5d: End to end -testaus__
 
 __KOODI JA TESTIT AJANTASAISESTI YHTENEVÄT, JÄRJESTYKSESSÄ KAIKISSA REPOISSA JA _KAIKKI TEHTÄVÄT OVAT VALMIITA_ (kaikki materiaalissa annetut tehtävät palautettu/tehty)__
