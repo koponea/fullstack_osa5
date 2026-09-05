@@ -80,8 +80,7 @@ describe('<Blog />', () => {
       screen.debug()
     })
   })
-  describe('tests with mock reactions', () => {
-
+  describe('tests with reactions', () => {
 
     test('like button reacts', async () => {
       const mockHandler = vi.fn()

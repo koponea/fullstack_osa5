@@ -12,7 +12,7 @@ const BlogForm = (props) => {
   } = props
 
   return (
-    <form onSubmit={addBlog} >
+    <form data-testid="create-blog-form" onSubmit={addBlog} >
       <div>
         <h2>create new</h2>
         <div>
