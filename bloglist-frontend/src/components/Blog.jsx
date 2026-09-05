@@ -9,9 +9,9 @@ const blogStyle = {
 }
 
 const Blog = ({ blog, blogRef, onLike, onDelete }) => {
-
+  const testId = `blog-${blog.id}` // the id is not secret outside
   return (
-    < div style={blogStyle}>
+    < div data-testid={testId} style={blogStyle}>
 
       {blog.title} {blog.author}
 

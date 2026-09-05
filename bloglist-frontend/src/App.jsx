@@ -234,7 +234,7 @@ const App = () => {
 
       {user && (
         <div>
-          {blogs.map(blog =>
+          {blogs.map((blog) =>
             <Blog
               key={blog.id}
               blog={blog}
