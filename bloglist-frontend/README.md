@@ -13,7 +13,7 @@ Tehtävät 5.1-5.4, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien li
 - __5b: props.children ja komponentin ref__
 Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy vain tarvittaessa, likejen päivittely, muotoilua ja blogin poisto.
 - __5c: React-sovellusten testaaminen__
-5.13-14: blogilistan testit, step1-2: Blog renderöityy ja hide/show komponentit, käyttäjän simulointi
+5.13-15: blogilistan testit, step1-3: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa
 - __5d: End to end -testaus__
 
 __KOODI JA TESTIT AJANTASAISESTI YHTENEVÄT, JÄRJESTYKSESSÄ KAIKISSA REPOISSA JA _KAIKKI TEHTÄVÄT OVAT VALMIITA_ (kaikki materiaalissa annetut tehtävät palautettu/tehty lisätehtävineen (*), useasti sopivilta osin häiritsemättömiä osia ennen varsinaista tehtäväkommittia)__
