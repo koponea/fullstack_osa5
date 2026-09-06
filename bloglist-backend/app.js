@@ -12,7 +12,6 @@ const app = express()
 
 const mongoUrl = config.MONGODB_URI_BLOGS
 mongoose.connect(mongoUrl, { family: 4 })
-  // koponen:
   .then(() => {
     logger.info('connected to mongodb')
   })
@@ -26,6 +25,10 @@ app.use(middleware.tokenExtractor)
 app.use('/api/login', loginRouter) // binding to the routebase
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
+if (process.env.NODE_ENV === 'test') {
+  const testingRouter = require('./controllers/testing')
+  app.use('/api/testing', testingRouter)
+}
 
 // middleware for a non-defined route
 app.use(middleware.unknownEndpoint)
