@@ -51,7 +51,22 @@ const createNote = async (page, noteText) => {
     await page.getByText('cancel').click()
 }
 
+const createBlog = async (page, blog) => {
+    const blogLineRegexp = new RegExp(`.*${blog.title} by ${blog.author}.*`)
+
+    expect(await page.locator(`${dataTestId('crete-new-blog')}`))
+    const open = await page.locator(`${dataTestId('create-new-blog')}:visible`)
+    await open.click()
+    await page.getByTestId('title-input').fill(blog.title)
+    await page.getByTestId('author-input').fill(blog.author)
+    await page.getByTestId('url-input').fill(blog.url)
+    await page.locator(dataTestId('submit-blog')).click()
+
+    await expect(page.getByText(blogLineRegexp)).toBeVisible()
+}
+
 export {
+    createBlog,
     createNote,
     dataTestId,
     dataTestIdStartsWith,

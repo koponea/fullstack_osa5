@@ -65,9 +65,9 @@ Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy
 - __5c: React-sovellusten testaaminen__
 5.13-16: blogilistan testit, step1-4: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa. BlogForm:in toiminta.
 - __5d: End to end -testaus, Playwright -hakemisto: e2e__
-5.17-5.18: Playwright-testit Blogilista-appille, projekti, säädöt ja ensimmäiset caset, loginin tarkistus ja login.
+5.17-5.19: stepit 1-4: Playwright-testit Blogilista-appille, projekti, säädöt ja ensimmäiset caset, loginin tarkistus ja login. Kirjautunut käyttä pystyy luomaan blogin.
 
-__Huom: Playwright-projektiin kuuluu e2e/tests/utils/.env -tiedosto, katso ohjeet samassa hakemistossa olevasta example.env -tiedostosta käyttöön__
+__Huom: Playwright-projektiin kuuluu e2e/.env -tiedosto, katso käyttöohjeet e2e/example.env -tiedostosta__
 
 ******5 PW UNDER CONSTRUCTION !! all tests playable***
 

@@ -50,7 +50,7 @@ const BlogForm = (props) => {
             />
           </label>
         </div>
-        <button type="submit" data-testid="submit">{submitLabel} </button>
+        <button type="submit" data-testid="submit-blog">{submitLabel} </button>
       </div>
     </form>
   )

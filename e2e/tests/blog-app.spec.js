@@ -13,6 +13,7 @@ const {
   loginAndVerify,
   DEFAULT_USER,
   NOTIFICATION_CLASS,
+  createBlog,
 } = require('../utils/helper')
 
 const RGB_ERROR_RED = 'rgb(255, 0, 0)'
@@ -23,6 +24,7 @@ describe('Blog app', () => {
     await request.post('/api/testing/reset') // 3003
     await request.post('/api/users', { data: DEFAULT_USER })
     await page.goto('/')
+    //console.log(`test user ${DEFAULT_USER.username} created`)
   })
 
   test('Login form is shown', async ({ page }) => {
@@ -75,6 +77,33 @@ describe('Blog app', () => {
       await expect(errorDiv).toHaveCSS('border-style', 'solid')
       await expect(errorDiv).toHaveCSS('color', RGB_ERROR_RED)
       await expect(page.getByText(`${config.USERNAME_DEFAULT} logged in`)).not.toBeVisible()
+    })
+  })
+
+
+  describe('When logged in', () => {
+
+    beforeEach(async ({ page }) =>
+      await loginAndVerify({ page })
+    )
+
+    test('a new blog can be created', async ({ page }) => {
+      const blog = {
+        title: `A title by Playwright ${genRndId()}`,
+        author: 'E. Wonderwall',
+        url: 'https://fullstackopen.com/'
+      }
+      await createBlog(page, blog)
+
+      // smallest el in the row where the /.*text.*/ is visible
+      expect(await page.locator(`li:text-is("${blog.title} by ${blog.author}"):visible`))
+
+      const notificationBanner = page.locator('.notification')
+      await expect(notificationBanner).toContainText(
+        `a new blog ${blog.title} by ${blog.author} added`
+      )
+      await expect(notificationBanner).toHaveCSS('border-style', 'solid')
+      await expect(notificationBanner).toHaveCSS('color', RGB_NOTIFICATION_GREEN)
     })
   })
 })
