@@ -4,7 +4,7 @@ const LoginForm = ({
   handleLogin,
   handlePassword,
   handleUsername,
-  submitLabel = 'login',
+  submitLabel = 'log in',
 }) => {
 
   return (
@@ -30,7 +30,7 @@ const LoginForm = ({
             />
           </label>
         </div>
-        <button type="submit" data-testid="submit">{submitLabel}
+        <button type="submit" data-testid="submit-login">{submitLabel}
         </button>
       </form >
     </div>

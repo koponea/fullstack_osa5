@@ -35,7 +35,7 @@ describe.skip('Note app', () => {
   test('user can log in', async ({ page }) => {
     test.setTimeout(120_000) //login
 
-    await page.getByRole('button', { name: 'login' }).click()
+    await page.getByRole('button', { name: 'log in' }).click()
     console.log(config.USERNAME_DEFAULT, config.USER_NAME_DEFAULT)
     expect(await page.getByRole('textbox').all()).toHaveLength(2)
 
@@ -43,7 +43,7 @@ describe.skip('Note app', () => {
     await page.getByLabel('password').fill(config.PASSWORD_DEFAULT)
 
     // LOST coordinates in with --ui ???! --->
-    //await page.getByRole('button', { name: 'login' }).click()
+    //await page.getByRole('button', { name: 'log in' }).click()
     await page.getByTestId('submit-login').click() // login
 
     await expect(page.getByText(`${config.USER_NAME_DEFAULT} logged in`)).toBeVisible()

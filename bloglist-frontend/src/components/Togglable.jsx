@@ -1,4 +1,5 @@
 import { useState, useImperativeHandle } from 'react'
+import { kebabCase } from 'lodash'
 
 const Togglable = ({
   ref,
@@ -20,19 +21,22 @@ const Togglable = ({
     return { toggleVisibility }
   })
 
+  const testId = kebabCase(buttonLabel)
+  const hideTestId = kebabCase(hideLabel)
+
   const showButton = buttonPlacing === 'regular' ?
     <div style={hideWhenVisible}>
-      <button onClick={toggleVisibility}>{buttonLabel}</button>
+      <button data-testid={testId} onClick={toggleVisibility}>{buttonLabel}</button>
     </div> :
-    <button style={hideWhenVisible} onClick={toggleVisibility}>{buttonLabel}</button>
+    <button data-testid={testId} style={hideWhenVisible} onClick={toggleVisibility}>{buttonLabel}</button>
 
   const dataWithHideButton = buttonPlacing === 'regular' ?
     <div style={showWhenVisible}>
       {children}
-      <button onClick={toggleVisibility}>{hideLabel}</button>
+      <button data-testid={hideTestId} onClick={toggleVisibility}>{hideLabel}</button>
     </div> :
     <>
-      <button style={showWhenVisible} onClick={toggleVisibility}>{hideLabel}</button>
+      <button data-testid={hideTestId} style={showWhenVisible} onClick={toggleVisibility}>{hideLabel}</button>
       <div style={showWhenVisible} >{children}</div>
     </>
 

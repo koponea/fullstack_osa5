@@ -23,8 +23,8 @@ const App = () => {
 
   const eventHandler = receivedBlogzz => {
     // rekisteroi tapahtumankasittelija get-operaatiolle
-    receivedBlogzz.forEach(el => el.creator =  el.user ? el.user.name : '')
-    receivedBlogzz = receivedBlogzz.sort((a,b) => b.likes - a.likes)
+    receivedBlogzz.forEach(el => el.creator = el.user ? el.user.name : '')
+    receivedBlogzz = receivedBlogzz.sort((a, b) => b.likes - a.likes)
     setBlogs(receivedBlogzz)
   }
 
@@ -89,15 +89,6 @@ const App = () => {
     }
   }
 
-  const handleUsername = (event) => {
-    logger.debug('username:', event.target.value)
-    setUsername(event.target.value)
-  }
-  const handlePassword = (event) => {
-    logger.debug('password:', event.target.value)
-    setPassword(event.target.value)
-  }
-
   const handleLike = (event) => {
     blogService
       .update(event.id,
@@ -110,14 +101,14 @@ const App = () => {
           blogs
             .filter(b => b.id !== updated.id)
             .concat({ ...updated, creator: event.creator })
-            .sort((a,b) => b.likes - a.likes)
+            .sort((a, b) => b.likes - a.likes)
         )
         notifyUser(`the blog ${event.title} got a like`)
       })
-      .catch(error => +
-      notifyUserOfError(
-        `The blog could be not be liked, ${error}`
-      )
+      .catch(error =>
+        notifyUserOfError(
+          `The blog could be not be liked, ${error}`
+        )
       )
   }
 
@@ -156,7 +147,6 @@ const App = () => {
     }
   }
 
-
   const handleDelete = async (blog) => {
     console.log('delete clicked on', blog.id)
     if (window.confirm(`Remove blog ${blog.title} by ${blog.creator} ?`)) {
@@ -183,9 +173,37 @@ const App = () => {
     }
   }
 
-  //const loginForm = () => {
+  const blogForm = () => (
+    <Togglable buttonLabel='create new blog' ref={blogFormRef}>
+      <BlogForm
+        url={url}
+        author={author}
+        title={title}
+        setTitle={setTitle}
+        setAuthor={setAuthor}
+        setUrl={setUrl}
+        addBlog={addBlog}
+      />
+    </Togglable>
+  )
+
   const hideWhenVisible = { display: loginVisible ? 'none' : '' }
   const showWhenVisible = { display: loginVisible ? '' : 'none' }
+
+  const loginForm = () => (
+    <div style={showWhenVisible}>
+      <LoginForm
+        password={password}
+        username={username}
+        handleLogin={handleLogin}
+        handlePassword={({ target }) => setPassword(target.value)}
+        handleUsername={({ target }) => setUsername(target.value)}
+      />
+      <button onClick={() => setLoginVisible(false)}>cancel</button>
+
+    </div>
+  )
+
   return (
     <div>
       {!user && (<div>
@@ -195,17 +213,7 @@ const App = () => {
         <div style={hideWhenVisible}>
           <button onClick={() => setLoginVisible(true)}>log in</button>
         </div>
-
-        <div style={showWhenVisible}>
-          <LoginForm
-            password={password}
-            username={username}
-            handleLogin={handleLogin}
-            handlePassword={handlePassword}
-            handleUsername={handleUsername}
-          />
-          <button onClick={() => setLoginVisible(false)}>cancel</button>
-        </div>
+        {loginForm()}
 
       </div>)
       }
@@ -218,17 +226,7 @@ const App = () => {
           <div>{user.name} logged in
             <button onClick={handleLogout} data-testid="logout">logout</button>
           </div>
-          <Togglable buttonLabel='create new blog' ref={blogFormRef}>
-            <BlogForm
-              url={url}
-              author={author}
-              title={title}
-              setTitle={setTitle}
-              setAuthor={setAuthor}
-              setUrl={setUrl}
-              addBlog={addBlog}
-            />
-          </Togglable>
+          {blogForm()}
         </div>
       )}
 
