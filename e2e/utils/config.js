@@ -17,10 +17,8 @@ const SALT_ROUNDS = toInteger(process.env.SALT_ROUNDS) || 10
 const USERNAME_DEFAULT = process.env.USERNAME_DEFAULT || 'superuser'
 const PASSWORD_DEFAULT = process.env.PASSWORD_DEFAULT || 'salaisuus'
 const USER_NAME_DEFAULT = process.env.USER_NAME_DEFAULT || 'super'
-const FE_URL = process.env.FE_URL || 'http://localhost:3003'
 
 module.exports = {
-  FE_URL,
   PORT,
   MONGODB_URI_BLOGS,
   USERNAME_MIN,

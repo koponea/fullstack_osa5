@@ -17,14 +17,10 @@ const {
 } = require('../utils/helper')
 
 describe('Note app', () => {
-
   beforeEach(async ({ page, request }) => {
-    await request.post(`${config.FE_URL}/api/testing/reset`)
-    await request.post(`${config.FE_URL}/api/users`, {
-      data: DEFAULT_USER
-    })
-    console.log('logging in to:', config.FE_URL)
-    await page.goto(config.FE_URL)
+    await request.post('/api/testing/reset')
+    await request.post('/api/users', {data: DEFAULT_USER})
+    await page.goto('/')
   })
 
   test('front page can be opened', async ({ page }) => {
