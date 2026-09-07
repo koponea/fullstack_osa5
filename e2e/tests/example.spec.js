@@ -1,6 +1,8 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 
+/**** COPIED EX !! playable ****/
+
 //describe.skip('Examples from pw init', () => {
 test.skip('has title', async ({ page }) => {
   await page.goto('https://playwright.dev/');

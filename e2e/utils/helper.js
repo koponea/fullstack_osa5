@@ -39,11 +39,16 @@ const loginAndVerify = async ({
 const createNote = async (page, noteText) => {
     const noteRegexp = new RegExp(`.*${noteText}.*`)
 
-    await page.getByRole('button', { name: 'new note' }).click()
+    //// ja täs kun kerran 
+
+    expect(await page.locator(`${dataTestId('new-note')}`)).toBeVisible()
+    const open = await page.locator(`${dataTestId('new-note')}:visible`)
+    await open.click()
     await page.getByRole('textbox').fill(noteText)
     await page.locator(dataTestId('submit-note')).click()
 
     await expect(page.getByText(noteRegexp)).toBeVisible()
+    await page.getByText('cancel').click()
 }
 
 export {

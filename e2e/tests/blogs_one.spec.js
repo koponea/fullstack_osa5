@@ -1,10 +1,12 @@
 const { test, describe, expect } = require('@playwright/test')
 
-const url = 'http://localhost:5173'
+/**** UNDER CONSTRUCTION !! playable ****/
 
 describe.skip('Note app', () => {
   test('front page can be opened', async ({ page }) => {
-    await page.goto(url)
+    await page.goto('/') // baseURL
+
+    // still NOTES... !
 
     const locators = page.findAllByText('Notes')
     await expect(locators[0]).toBeVisible()

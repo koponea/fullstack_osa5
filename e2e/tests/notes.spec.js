@@ -19,7 +19,7 @@ const {
 describe('Note app', () => {
   beforeEach(async ({ page, request }) => {
     await request.post('/api/testing/reset')
-    await request.post('/api/users', {data: DEFAULT_USER})
+    await request.post('/api/users', { data: DEFAULT_USER })
     await page.goto('/')
   })
 
@@ -84,22 +84,27 @@ describe('Note app', () => {
     })
 
 
-    describe('and a note exists', () => {
+    describe('and several notes exists', () => {
+      const RND_ID = genRndId()
+      const noteText1st = `one more note by playwright 999-${RND_ID}`
+      const noteText2nd = `yet another note by playwright 999-${RND_ID}`
+  
       beforeEach(async ({ page }) => {
-        const RND_ID = genRndId()
-        const newNoteText = `another note by playwright 999-${RND_ID}`
-        await createNote(page, newNoteText)
-
-        expect(await page.locator(`li:text-is("${newNoteText}"):visible`))
+        await createNote(page, noteText1st)
+        await createNote(page, noteText2nd)
+        expect(await page.locator(`li:text-is("${noteText1st}"):visible`))
+        expect(await page.locator(`li:text-is("${noteText2nd}"):visible`))
       })
 
       test('importance can be changed', async ({ page }) => {
         // default is important: true
-        const locator =
-          await page.locator(`${dataTestIdStartsWith('make-not-important-')}:visible`)
+        const noteElement = page.getByText(noteText1st)
+        const locator = noteElement
+          .locator(`${dataTestIdStartsWith('make-not-important-')}:visible`)
+  
         await locator.click({ timeout: 20_000 })
 
-        await expect(page.getByText('make important')).toBeVisible()
+        await expect(page.getByText('make important')).toBeVisible() // ===one
       })
     })
   })

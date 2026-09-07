@@ -1,5 +1,7 @@
 # Repositorio fullstack_osa5
 
+******UNDER CONSTRUCTION !! all tests playable***
+
 Tämä repositorio sisältää kurssin osan 5 tehtävien palautuksen (5.X) Tehtävien toteutuksen vaatimukset on kuvattu kurssin sivuilla, https://fullstackopen.com/osa5
 
 ## Palautusrepositoriot, vapaa kuvaus tehtävistä
@@ -52,7 +54,7 @@ Tämä repositorio sisältää kurssin osan 5 tehtävien palautuksen (5.X) Teht�
 
 ### fullstack_osa5
 
-Tässä osassa on otettu pohjaksi erikseen valmiina annettu osan 3 frontend, mutta se toteuttaa tietenkin kaikki edelliset funktionaaliset kohdat osasta__fullstack_osa3__ kuten myös ehdotettu mallivastauksen backend osasta __fullstack_osa4__. Joitakin tarkennuksia ja konffauksia omasta backend-toteutuksesta on saatettu lisätä näihin nyt kloonattuihin front- ja backendeihin.
+Tässä osassa on otettu pohjaksi erikseen valmiina annettu osan 3 frontend, mutta se toteuttaa tietenkin kaikki edelliset funktionaaliset kohdat osasta __fullstack_osa3__ kuten myös ehdotettu mallivastauksen backend osasta __fullstack_osa4__. Joitakin tarkennuksia ja konffauksia omasta backend-toteutuksesta on saatettu lisätä näihin nyt kloonattuihin front- ja backendeihin. Tässä repossa on säilöttynä eri repossa sijaitsevan (oma tuotos+mallivastaus -hybridi) __Notes-appin Playwright -testaus__ joka on muotoutunut kurssin kulussa.
 
 #### React-sovelluksen testaaminen, React Router
 
@@ -62,6 +64,9 @@ Tehtävät 5.1-5.4, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien li
 Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy vain tarvittaessa, likejen päivittely, muotoilua ja blogin poisto.
 - __5c: React-sovellusten testaaminen__
 5.13-16: blogilistan testit, step1-4: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa. BlogForm:in toiminta.
-- __5d: End to end -testaus__, Playwright hakemisto __e2e__
+- __5d: End to end -testaus, Playwright -hakemisto: e2e__
+TOISTAISEKSI NOTES-APP MUUNNOKSET KURSSILLE
 
-__KOODI JA TESTIT AJANTASAISESTI YHTENEVÄT, JÄRJESTYKSESSÄ KAIKISSA REPOISSA JA _KAIKKI TEHTÄVÄT OVAT VALMIITA_ (kaikki materiaalissa annetut tehtävät palautettu/tehty)__
+******5 PW UNDER CONSTRUCTION !! all tests playable***
+
+__KOODI JA TESTIT AJANTASAISESTI YHTENEVÄT KAIKISSA REPOISSA JA _KAIKKI TEHTÄVÄT OVAT VALMIITA_ (kaikki materiaalissa annetut tehtävät järjestyksessä palautettu/tehty)__
