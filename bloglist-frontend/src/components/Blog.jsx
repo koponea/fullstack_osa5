@@ -10,6 +10,7 @@ const blogStyle = {
 
 const Blog = ({ blog, blogRef, onLike, onDelete }) => {
   const testId = `blog-${blog.id}` // the id is not secret outside
+  const buttonTestId = `like-button-${blog.id}`
   return (
     < div data-testid={testId} style={blogStyle}>
 
@@ -19,7 +20,7 @@ const Blog = ({ blog, blogRef, onLike, onDelete }) => {
 
         <div>url: {blog.url}</div>
         <div>likes: {blog.likes ? blog.likes : 0}
-          <button onClick={onLike} data-testid="like-button">like</button>
+          <button onClick={onLike} data-testid={buttonTestId}>like</button>
         </div>
         <div>{blog.creator}</div>
 

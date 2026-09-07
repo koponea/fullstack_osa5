@@ -18,6 +18,11 @@ const {
 
 const RGB_ERROR_RED = 'rgb(255, 0, 0)'
 const RGB_NOTIFICATION_GREEN = 'rgb(0, 128, 0)'
+const defaultBlog = {
+  title: `A title by Playwright ${genRndId()}`,
+  author: 'Oasis',
+  url: 'https://fullstackopen.com/',
+}
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -88,11 +93,8 @@ describe('Blog app', () => {
     )
 
     test('a new blog can be created', async ({ page }) => {
-      const blog = {
-        title: `A title by Playwright ${genRndId()}`,
-        author: 'E. Wonderwall',
-        url: 'https://fullstackopen.com/'
-      }
+      const blog = { ...defaultBlog }
+
       await createBlog(page, blog)
 
       // smallest el in the row where the /.*text.*/ is visible
@@ -104,6 +106,56 @@ describe('Blog app', () => {
       )
       await expect(notificationBanner).toHaveCSS('border-style', 'solid')
       await expect(notificationBanner).toHaveCSS('color', RGB_NOTIFICATION_GREEN)
+    })
+  })
+
+  describe('when several blogs exists', () => {
+    // rest of the data would be tested at UT for mix-ups
+    const blogA = { ...defaultBlog, title: `Wonderwall A ${genRndId()}` }
+    const blogB = { ...defaultBlog, title: `Wonderwall B ${genRndId()}` }
+    const blogC = { ...defaultBlog, title: `Wonderwall C ${genRndId()}` }
+
+    beforeEach(async ({ page }) =>
+      await loginAndVerify({ page })
+    )
+
+    beforeEach(async ({ page }) => {
+      // waitforia, ettei createt mene päällekkäin, kerkiää renderöidä
+      //const blogLoc = dataTestIdStartsWith('blog')
+      const blogLineRegexp = (blog) => new RegExp(`.*${blog.title} ${blog.author}.*`)
+
+      await createBlog(page, blogA)
+      await page.getByText(blogLineRegexp(blogA)).waitFor()
+      await createBlog(page, blogB)
+      await page.getByText(blogLineRegexp(blogB)).waitFor()
+      await createBlog(page, blogC)
+      await page.getByText(blogLineRegexp(blogC)).waitFor()
+      // tai esim 3:s nappula:
+      // page.locator('li').filter({ hasText: noteText3rd }).getByRole('button')
+    })
+
+    test('one of those can be modified by liking', async ({ page }) => {
+      console.log('the fastest way: add blog-id to all buttons, apiquery the id')
+
+      const likeLoc = dataTestIdStartsWith('like-button-') // do not know id
+
+      const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
+        .filter({ hasText: blogB.title })     
+        
+      const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' }) 
+      await expandButton.click()
+
+      expect(blogLoc.getByRole('button').first()).toContainText('hide')
+
+      await blogLoc.getByText(/^likes: (\s{0,})?\d{1,}/).waitFor() //single
+
+      const likeButton = blogLoc.locator(likeLoc)
+      await likeButton.click({ timeout: 20_000 })
+
+      await blogLoc.getByText(/^likes:/).waitFor() //single
+      await blogLoc.getByText(/^likes: 1like$/).waitFor()
+
+      console.log('the fastest way: afterwards GET also the likes and verify')
     })
   })
 })
