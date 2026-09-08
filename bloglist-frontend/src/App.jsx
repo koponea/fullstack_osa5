@@ -32,14 +32,14 @@ const App = () => {
     setErrorMessage(msg)
     setTimeout(() => {
       setErrorMessage(null)
-    }, 6000)
+    }, 5000)
   }
 
   const notifyUser = msg => {
     setNotificationMessage(msg)
     setTimeout(() => {
       setNotificationMessage(null)
-    }, 4000)
+    }, 5000)
   }
 
   const blogFormRef = useRef()
@@ -149,7 +149,7 @@ const App = () => {
 
   const handleDelete = async (blog) => {
     console.log('delete clicked on', blog.id)
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.creator} ?`)) {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author} ?`)) {
 
       try {
         const status = await blogService.destroy(blog.id)

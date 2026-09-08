@@ -1,5 +1,6 @@
 const config = require('../utils/config')
 const { expect } = require('@playwright/test')
+import { isRegExp } from 'lodash'
 
 const DEFAULT_USER = {
     username: config.USERNAME_DEFAULT,
@@ -51,9 +52,48 @@ const createNote = async (page, noteText) => {
     await page.getByText('cancel').click()
 }
 
-const createBlog = async (page, blog) => {
-    const blogNotificationRegexp =
-        new RegExp(`.*${blog.title} by ${blog.author}.*`)
+const toTextMatchesCssPW = (prefix, regExp, suffix = '') => {
+    // Escape \ and " for the css string
+    // :text-matches() is The pseudo-class for regex 
+    // matching, it takes the pattern as a quoted string
+    const escSrc = regExp.source
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"');
+    const flags =
+        regExp.flags.replace(/"/g, ''); // no quotes anyways
+
+    return `${prefix}:text-matches("${escSrc}"${flags ? `, "${flags}"` : ''})${suffix}`;
+}
+
+const buildElementLocator = ({
+    element = 'li',
+    match, // string, RegExp
+    suffix = '',
+    partial = true
+}) =>
+    // :text(partialText) :text-is(exactText)    exact match is pw specific
+    isRegExp(match) ?
+        toTextMatchesCssPW(element, match, suffix)
+        : partial
+            ? `${element}:text("${match}")${suffix}`
+            : `${element}:text-is("${match}")${suffix}`
+
+
+const notificationBannerLocator = (
+    match, // string, RegExp
+    visibility = '',  // ':visible', ':hidden', ''
+    partial = true
+) =>
+    buildElementLocator({
+        element: '.notification', match, suffix: visibility, partial
+    })
+
+const blogTitleAuthorRegexp = (blog, notification = false) =>
+    notification
+        ? new RegExp(`.*${blog.title}.*by.*${blog.author}.*`)
+        : new RegExp(`.*${blog.title} ${blog.author}.*`)
+
+const submitBlog = async (page, blog) => {
 
     expect(await page.locator(`${dataTestId('crete-new-blog')}`))
     const open = await page.locator(`${dataTestId('create-new-blog')}:visible`)
@@ -64,18 +104,46 @@ const createBlog = async (page, blog) => {
     await page.getByTestId('url-input').fill(blog.url)
 
     await page.locator(dataTestId('submit-blog')).click()
+}
 
-    page.getByText(blogNotificationRegexp).waitFor()
+const createBlog = async (page, blog) => {
+
+    const rowRegexp = blogTitleAuthorRegexp(blog)
+    const bannerRegexp = blogTitleAuthorRegexp(blog, true)
+
+    await submitBlog(page, blog)
+
+    await page.getByText(rowRegexp).waitFor()
+    await page.getByText(bannerRegexp).waitFor()
+
+    expect(await page
+        .locator(notificationBannerLocator(bannerRegexp, ':visible'))).toBeDefined()
+    expect(await page.getByText(rowRegexp).waitFor())
+    // tai esim 3:s nappula:
+    // page.locator('li').filter({ hasText: noteText3rd }).getByRole('button')
+}
+
+const expandBlog = async (page, blog) => {
+    const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
+        .filter({ hasText: blog.title })
+
+    const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' })
+    await expandButton.click()
+
+    expect(blogLoc.getByRole('button').first()).toContainText('hide')
 }
 
 export {
+    submitBlog,
     createBlog,
     createNote,
     dataTestId,
     dataTestIdStartsWith,
+    expandBlog,
     genRndId,
     login,
     loginAndVerify,
+    notificationBannerLocator,
     DEFAULT_USER,
     NOTIFICATION_CLASS
 }

@@ -3,31 +3,40 @@ const {
   test,
   expect,
   beforeEach,
-  describe
+  describe,
 } = require('@playwright/test')
 const {
   dataTestId,
   dataTestIdStartsWith,
+  expandBlog,
   genRndId,
   login,
   loginAndVerify,
   DEFAULT_USER,
   NOTIFICATION_CLASS,
+  submitBlog,
   createBlog,
 } = require('../utils/helper')
+const { stringify } = require('node:querystring')
 
 const RGB_ERROR_RED = 'rgb(255, 0, 0)'
 const RGB_NOTIFICATION_GREEN = 'rgb(0, 128, 0)'
-const defaultBlog = {
+const DEFAULT_BLOG = {
   title: `A title by Playwright ${genRndId()}`,
   author: 'Oasis',
   url: 'https://fullstackopen.com/',
+}
+const USER_VIEWER = {
+  username: 'viewer',
+  password: 'viuviuviuviu',
+  name: 'Viewerino',
 }
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
     await request.post('/api/testing/reset') // 3003
     await request.post('/api/users', { data: DEFAULT_USER })
+    await request.post('/api/users', { data: USER_VIEWER })
     await page.goto('/')
     //console.log(`test user ${DEFAULT_USER.username} created`)
   })
@@ -92,10 +101,10 @@ describe('Blog app', () => {
       await loginAndVerify({ page })
     )
 
-    test('a new blog can be created', async ({ page }) => {
-      const blog = { ...defaultBlog }
+    test('A new blog can be created', async ({ page }) => {
+      const blog = { ...DEFAULT_BLOG }
 
-      await createBlog(page, blog)
+      await submitBlog(page, blog)
 
       // smallest el in the row where the /.*text.*/ is visible
       expect(await page.locator(`li:text-is("${blog.title} by ${blog.author}"):visible`))
@@ -109,40 +118,33 @@ describe('Blog app', () => {
     })
   })
 
-  describe('when several blogs exists', () => {
-    // rest of the data would be tested at UT for mix-ups
-    const blogA = { ...defaultBlog, title: `Wonderwall A ${genRndId()}` }
-    const blogB = { ...defaultBlog, title: `Wonderwall B ${genRndId()}` }
-    const blogC = { ...defaultBlog, title: `Wonderwall C ${genRndId()}` }
+  describe('When several blogs exists', () => {
+    // rest of the data should be tested at UT for mix-ups
+    const blogA = { ...DEFAULT_BLOG, title: `Wonderwall A ${genRndId()}` }
+    const blogB = { ...DEFAULT_BLOG, title: `Wonderwall B ${genRndId()}` }
+    const blogC = { ...DEFAULT_BLOG, title: `Wonderwall C ${genRndId()}` }
+    const blogForDel = { ...DEFAULT_BLOG, title: `Wonderwall D ${genRndId()}` }
 
     beforeEach(async ({ page }) =>
       await loginAndVerify({ page })
     )
 
     beforeEach(async ({ page }) => {
-      // waitforia, ettei createt mene päällekkäin, kerkiää renderöidä
-      //const blogLoc = dataTestIdStartsWith('blog')
-      const blogLineRegexp = (blog) => new RegExp(`.*${blog.title} ${blog.author}.*`)
-
       await createBlog(page, blogA)
-      await page.getByText(blogLineRegexp(blogA)).waitFor()
       await createBlog(page, blogB)
-      await page.getByText(blogLineRegexp(blogB)).waitFor()
+      await createBlog(page, blogForDel)
       await createBlog(page, blogC)
-      await page.getByText(blogLineRegexp(blogC)).waitFor()
-      // tai esim 3:s nappula:
-      // page.locator('li').filter({ hasText: noteText3rd }).getByRole('button')
     })
 
-    test('one of those can be modified by liking', async ({ page }) => {
+    test('One of those can be modified by liking', async ({ page }) => {
       console.log('the fastest way: add blog-id to all buttons, apiquery the id')
 
       const likeLoc = dataTestIdStartsWith('like-button-') // do not know id
 
       const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
-        .filter({ hasText: blogB.title })     
-        
-      const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' }) 
+        .filter({ hasText: blogB.title })
+
+      const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' })
       await expandButton.click()
 
       expect(blogLoc.getByRole('button').first()).toContainText('hide')
@@ -156,6 +158,50 @@ describe('Blog app', () => {
       await blogLoc.getByText(/^likes: 1like$/).waitFor()
 
       console.log('the fastest way: afterwards GET also the likes and verify')
+    })
+
+    test('One of those can be deleted', async ({ page }) => {
+      const blog = { ...blogForDel }
+      const dialogQ = `Remove blog ${blog.title} by ${blog.author} ?`
+
+      // listener for the window.confirm
+      page.on('dialog', async (dialog) => {
+        console.log(dialog.type(), 'dialog:', dialog.message())
+        expect(dialog.type()).toBe('confirm');
+        expect(dialog.message()).toBe(dialogQ);
+        await dialog.accept(); //  OK
+      })
+
+      const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
+        .filter({ hasText: blog.title })
+
+      const countOfBlogs = await page.locator(dataTestIdStartsWith('blog-')).count()
+
+      await expandBlog(page, blog)
+
+      // maybe an api GET?
+      page.on('response', data => {
+        const resData = data._initializer // get some better way
+        console.log('response, url', resData.url)
+        console.log('response, status', resData.status)
+        expect(resData.url).toEqual(expect.stringContaining('/api/blogs/'));
+        expect(resData.status === '204') // delete ok
+      });
+
+      const deleteButton = blogLoc.getByRole('button')
+        .filter({ hasText: 'remove' }) // single
+      await deleteButton.click({ timeout: 20_000 }) // the listener wakes up
+
+      // Ei, koska ei ole dialogikomponentti, pitää olla kuuntelija ylh
+      // await page.getByRole('dialog').getByRole('button', {name: 'OK'}).click()
+
+      const newCountOfBlogs = await page.locator(dataTestIdStartsWith('blog-')).count()
+      expect(newCountOfBlogs === countOfBlogs - 1)
+
+      const notificationBanner = page.locator('.notification')
+      await expect(notificationBanner).toContainText(`Deleted ${blog.title}`)
+      await expect(notificationBanner).toHaveCSS('color', RGB_NOTIFICATION_GREEN)
+
     })
   })
 })
