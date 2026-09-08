@@ -14,14 +14,6 @@ blogsRouter.get('/', async (request, response) => {
     .populate('user', { username: 1, name: 1, id: 1 })
   response.json(blogs)
 })
-/* malli:
-blogsRouter.get('/', (request, response) => {
-  Blog.find({})
-    .populate('user', { username: 1, name: 1, id: 1 })
-    .then(blogs => {
-      response.json(blogs)
-    })
-})*/
 
 // no GET/:id in the example
 blogsRouter.get('/:id', async (request, response) => {
@@ -36,7 +28,7 @@ blogsRouter.delete('/:id', userExtractor, async (request, response) => {
   if (!request.user) {
     return response.status(401).json({ error: 'token invalid' })
   }*/
-  const user = await User.findById(request.user)
+  const user = await User.findById(request.user) // the requestor
   /*
   if (!user) {
     return response.status(400).json({ error: 'userid missing or not valid' })

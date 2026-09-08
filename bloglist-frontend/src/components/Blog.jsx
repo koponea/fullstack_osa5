@@ -8,7 +8,7 @@ const blogStyle = {
   marginBottom: 5
 }
 
-const Blog = ({ blog, blogRef, onLike, onDelete }) => {
+const Blog = ({ blog, blogRef, onLike, onDelete, showDeleteButton }) => {
   const testId = `blog-${blog.id}` // the id is not secret outside
   const buttonTestId = `like-button-${blog.id}`
   return (
@@ -24,7 +24,7 @@ const Blog = ({ blog, blogRef, onLike, onDelete }) => {
         </div>
         <div>{blog.creator}</div>
 
-        <button onClick={onDelete}>remove</button>
+        <button style={showDeleteButton} onClick={onDelete}>remove</button>
 
       </Togglable>
 

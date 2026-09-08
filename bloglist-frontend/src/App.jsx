@@ -7,7 +7,7 @@ import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import loginService from './services/login'
 import logger from '../utils/logger'
-import { omit } from 'lodash'
+import { omit, toString } from 'lodash'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -23,7 +23,12 @@ const App = () => {
 
   const eventHandler = receivedBlogzz => {
     // rekisteroi tapahtumankasittelija get-operaatiolle
-    receivedBlogzz.forEach(el => el.creator = el.user ? el.user.name : '')
+    receivedBlogzz.forEach(el => {
+      console.log(user)
+      console.log(el.user.id, el.user.name)
+      el.creator = el.user ? el.user.name : ''
+      el.creatorUname = el.user ? el.user.username : ''
+    })
     receivedBlogzz = receivedBlogzz.sort((a, b) => b.likes - a.likes)
     setBlogs(receivedBlogzz)
   }
@@ -75,9 +80,9 @@ const App = () => {
     try {
       logger.debug(receivedBlog)
       notifyUser(`a new blog ${title} by ${author} added`)
-      setBlogs(blogs.concat(
-        { ...receivedBlog, creator: user.name }
-      ).sort((a, b) => b.likes - a.likes))
+      receivedBlog.creator = user.name
+      receivedBlog.creatorUname = user.username
+      setBlogs(blogs.concat(receivedBlog).sort((a, b) => b.likes - a.likes))
       setUrl('')
       setAuthor('')
       setTitle('')
@@ -100,7 +105,7 @@ const App = () => {
         setBlogs(
           blogs
             .filter(b => b.id !== updated.id)
-            .concat({ ...updated, creator: event.creator })
+            .concat({ ...updated, creator: event.creator, creatorUname: event.user.creatorUname })
             .sort((a, b) => b.likes - a.likes)
         )
         notifyUser(`the blog ${event.title} got a like`)
@@ -239,6 +244,7 @@ const App = () => {
               blogRef={blogRef}
               onLike={() => handleLike(blog)}
               onDelete={() => handleDelete(blog)}
+              showDeleteButton={{ display: user.username === blog.creatorUname ? '' : 'none' }}
             />
           )}
         </div>

@@ -58,7 +58,7 @@ describe('Blog app', () => {
 
   describe('Login', () => {
 
-    test('succeeds with correct credentials', async ({ page }) => {
+    test('Succeeds with correct credentials', async ({ page }) => {
       test.setTimeout(120_000) //login
 
       await page.getByRole('button', { name: 'log in' }).click()
@@ -81,7 +81,7 @@ describe('Blog app', () => {
       expect(await page.locator(dataTestId('create-new-blog'))).toBeVisible({ timeout: 10_000 })
     })
 
-    test('fails with wrong credentials', async ({ page }) => {
+    test('Fails with wrong credentials', async ({ page }) => {
       await login({ page, ...DEFAULT_USER, password: 'wrong' })
 
       await expect(page.getByText('wrong username or password')).toBeVisible()
@@ -190,6 +190,8 @@ describe('Blog app', () => {
 
       const deleteButton = blogLoc.getByRole('button')
         .filter({ hasText: 'remove' }) // single
+      expect(await blogLoc.getByRole('button').filter({ hasText: 'remove' }).all()).toHaveLength(1)
+
       await deleteButton.click({ timeout: 20_000 }) // the listener wakes up
 
       // Ei, koska ei ole dialogikomponentti, pitää olla kuuntelija ylh
@@ -202,6 +204,27 @@ describe('Blog app', () => {
       await expect(notificationBanner).toContainText(`Deleted ${blog.title}`)
       await expect(notificationBanner).toHaveCSS('color', RGB_NOTIFICATION_GREEN)
 
+    })
+
+    test('The non-creator cannot delete via UI', async ({ page }) => {
+      const blog = { ...blogA }
+
+      const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
+        .filter({ hasText: blog.title })
+
+      await page.getByRole('button', { name: 'logout' }).click()
+      await page.getByRole('button', { name: 'log in' }).waitFor()
+
+      // these open directly ehen logged out
+      await page.getByLabel('username').fill(USER_VIEWER.username)
+      await page.getByLabel('password').fill(USER_VIEWER.password)
+      await page.getByTestId('submit-login').click()
+      expect(await page.getByText(`${USER_VIEWER.name} logged in`)).toBeVisible()
+
+      await expandBlog(page, blog)
+
+      expect(await blogLoc.getByRole('button').filter({ hasText: 'remove' })
+        .all()).toHaveLength(0)
     })
   })
 })
