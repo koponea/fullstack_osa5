@@ -6,18 +6,21 @@ const {
   describe,
 } = require('@playwright/test')
 const {
+  createBlog,
   dataTestId,
   dataTestIdStartsWith,
   expandBlog,
   genRndId,
+  likeTheBlog,
   login,
   loginAndVerify,
+  nthBlogIsDefined,
+  readBlogId,
+  submitBlog,
   DEFAULT_USER,
   NOTIFICATION_CLASS,
-  submitBlog,
-  createBlog,
 } = require('../utils/helper')
-const { stringify } = require('node:querystring')
+import { toString } from 'lodash'
 
 const RGB_ERROR_RED = 'rgb(255, 0, 0)'
 const RGB_NOTIFICATION_GREEN = 'rgb(0, 128, 0)'
@@ -59,7 +62,7 @@ describe('Blog app', () => {
   describe('Login', () => {
 
     test('Succeeds with correct credentials', async ({ page }) => {
-      test.setTimeout(120_000) //login
+      test.setTimeout(20_000) // login
 
       await page.getByRole('button', { name: 'log in' }).click()
       console.log(config.USERNAME_DEFAULT, config.USER_NAME_DEFAULT)
@@ -177,7 +180,7 @@ describe('Blog app', () => {
 
       const countOfBlogs = await page.locator(dataTestIdStartsWith('blog-')).count()
 
-      await expandBlog(page, blog)
+      await expandBlog(page, test, blog)
 
       // maybe an api GET?
       page.on('response', data => {
@@ -215,16 +218,85 @@ describe('Blog app', () => {
       await page.getByRole('button', { name: 'logout' }).click()
       await page.getByRole('button', { name: 'log in' }).waitFor()
 
-      // these open directly ehen logged out
+      // these open directly when logged out
       await page.getByLabel('username').fill(USER_VIEWER.username)
       await page.getByLabel('password').fill(USER_VIEWER.password)
+      console.debug('logging in as:', USER_VIEWER.username)
       await page.getByTestId('submit-login').click()
       expect(await page.getByText(`${USER_VIEWER.name} logged in`)).toBeVisible()
 
-      await expandBlog(page, blog)
+      await expandBlog(page, test, blog)
 
       expect(await blogLoc.getByRole('button').filter({ hasText: 'remove' })
         .all()).toHaveLength(0)
+    })
+
+    test('The blogs are always in ascening order regarding likes', async ({ page }) => {
+      test.setTimeout(30_000) // all flapping around if narrow pipe
+
+      const likeLoc = dataTestIdStartsWith('like-button-') // do not know blog.id yet
+
+      // [A,B,C,D]
+      let blogs = [{ ...blogA }, { ...blogB }, { ...blogC }, { ...blogForDel }]
+      const titlesRegexpAtoD =
+        blogs.map(blog => new RegExp(`^${blog.title} ${blog.author}`))
+
+
+      // get blog id:s to blogs for test-dataid:s, be api's could b handy here
+      console.log('The code looks a bit -CYPRESSY- to me as javascript :)')
+      blogs[0].id = await readBlogId(page, blogs[0])
+      blogs[1].id = await readBlogId(page, blogs[1])
+      blogs[2].id = await readBlogId(page, blogs[2])
+      blogs[3].id = await readBlogId(page, blogs[3])
+      //console.log(blogs)
+
+      // likes (hiding) and all blogs
+      expect(await page.locator(likeLoc).all()).toHaveLength(4) // hiding buttons
+      expect(await page.locator(dataTestIdStartsWith('blog-')).all()).toHaveLength(4)
+
+      // expand all blogs, looping messes up
+      // await page.getByTestId(`blog-${blogs[3].id}`).getByRole('button').first().click()
+      await expandBlog(page, test, blogs[3])
+      await expandBlog(page, test, blogs[2])
+      await expandBlog(page, test, blogs[1])
+      await expandBlog(page, test, blogs[0])
+
+      /* CHECK: [A, B, D, C] is the creation order
+      / COULD fail due to REST but should not since created now via UI so in page states
+      / if this happens, then the page crashed & reloaded ??
+      /
+      / omg with these asyncs not stacked, cannot loop !!
+      */
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[0], 0) // blogs -> order
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[1], 1)
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[3], 2)
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[2], 3)
+
+      // like in random order, looping messes up
+      await likeTheBlog(page, test, blogs[2])
+      await likeTheBlog(page, test, blogs[1])
+
+      await page.getByTestId(`blog-${blogs[0].id}`).getByText(/^likes: 0like$/).waitFor()
+      expect(await page.locator(dataTestIdStartsWith('blog-'))
+        .nth(2).getByText(new RegExp(`^${blogs[0].title} ${blogs[0].author}`))).toBeVisible()
+
+      await likeTheBlog(page, test, blogs[3])
+      await likeTheBlog(page, test, blogs[3])
+      await likeTheBlog(page, test, blogs[2])
+      await likeTheBlog(page, test, blogs[3])
+      await page.getByText(/^likes: 3like$/).waitFor()
+
+      console.log('CHECK likes and order, [D, C, B, A] after likes')
+      const likeRegexp = [/^likes: 3like$/, /^likes: 2like$/, /^likes: 1like$/, /^likes: 0like$/]
+      await nthBlogIsDefined(page, test, likeRegexp[0], 0) // count -> order
+      await nthBlogIsDefined(page, test, likeRegexp[1], 1)
+      await nthBlogIsDefined(page, test, likeRegexp[2], 2)
+      await nthBlogIsDefined(page, test, likeRegexp[3], 3)
+
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[3], 0) // blogs -> order
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[2], 1)
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[1], 2)
+      await nthBlogIsDefined(page, test, titlesRegexpAtoD[0], 3)
     })
   })
 })
