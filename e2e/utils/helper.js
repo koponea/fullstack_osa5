@@ -32,7 +32,7 @@ const loginAndVerify = async ({
     password = config.PASSWORD_DEFAULT,
     name = config.USER_NAME_DEFAULT,
 }) => {
-    console.log('logging in as:', username)
+    console.info('logging in as:', username)
     await login({ page, username, password })
     expect(await page.getByText(`${name} logged in`)).toBeVisible()
 }
@@ -58,11 +58,11 @@ const toTextMatchesCssPW = (prefix, regExp, suffix = '') => {
     // matching, it takes the pattern as a quoted string
     const escSrc = regExp.source
         .replace(/\\/g, '\\\\')
-        .replace(/"/g, '\\"');
+        .replace(/"/g, '\\"')
     const flags =
-        regExp.flags.replace(/"/g, ''); // no quotes anyways
+        regExp.flags.replace(/"/g, '') // no quotes anyways
 
-    return `${prefix}:text-matches("${escSrc}"${flags ? `, "${flags}"` : ''})${suffix}`;
+    return `${prefix}:text-matches("${escSrc}"${flags ? `, "${flags}"` : ''})${suffix}`
 }
 
 const buildElementLocator = ({
@@ -77,7 +77,6 @@ const buildElementLocator = ({
         : partial
             ? `${element}:text("${match}")${suffix}`
             : `${element}:text-is("${match}")${suffix}`
-
 
 const notificationBannerLocator = (
     match, // string, RegExp
@@ -123,16 +122,43 @@ const createBlog = async (page, blog) => {
     // page.locator('li').filter({ hasText: noteText3rd }).getByRole('button')
 }
 
-const expandBlog = async (page, blog) => {
+const expandBlog = async (page, test, blog) => {
+    test.setTimeout(30_000) // if narrow pipe
+
     const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
         .filter({ hasText: blog.title })
 
     const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' })
     await expandButton.click()
 
-    expect(blogLoc.getByRole('button').first()).toContainText('hide')
+    expect(await blogLoc.getByRole('button').first()).toContainText('hide')
+    const id = await readBlogId(page, blog)
+    await page.getByTestId(`blog-${id}`).getByText(/^likes:.*like$/).waitFor()
 }
 
+const likeTheBlog = async (page, test, blog) => {
+    test.setTimeout(30_000) // if narrow pipe
+    await page.getByTestId(`like-button-${blog.id}`).click({ timeout: 20_000 })
+}
+
+const nthBlogIsDefined = async (page, test, expTxt, index = 0) => {
+    test.setTimeout(30_000) // if narrow pipe
+
+    await page.locator(dataTestIdStartsWith('blog-')).getByText(expTxt).waitFor()
+    await page.getByText(expTxt).waitFor()
+    expect(await page
+        .locator(dataTestIdStartsWith('blog-'))
+        .nth(index)
+        .getByText(expTxt)).toBeDefined()
+}
+
+const readBlogId = async (page, blog) => {
+    const testId = await page
+        .locator(dataTestIdStartsWith('blog-'))
+        .filter({ hasText: blog.title })
+        .getAttribute('data-testid')
+    return testId.slice(5)
+}
 export {
     submitBlog,
     createBlog,
@@ -141,9 +167,12 @@ export {
     dataTestIdStartsWith,
     expandBlog,
     genRndId,
+    likeTheBlog,
     login,
     loginAndVerify,
     notificationBannerLocator,
+    nthBlogIsDefined,
+    readBlogId,
     DEFAULT_USER,
     NOTIFICATION_CLASS
 }
