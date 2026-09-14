@@ -19,7 +19,7 @@ const {
 const RGB_ERROR_RED = 'rgb(255, 0, 0)'
 const RGB_NOTIFICATION_GREEN = 'rgb(0, 128, 0)'
 
-describe.skip('Note app', () => {
+describe('Note app', () => {
   beforeEach(async ({ page, request }) => {
     await request.post('/api/testing/reset')
     await request.post('/api/users', { data: DEFAULT_USER })
@@ -81,11 +81,12 @@ describe.skip('Note app', () => {
 
       const RND_ID = genRndId()
       const newNoteText = `a note created by playwright 888-${RND_ID}`
+      const newNoteLine = `${newNoteText}make not important`
       await createNote(page, newNoteText)
 
       await expect(page.getByText(newNoteText)).toBeVisible()
-      // smallest el in the row where the /.*text.*/ is visible 
-      expect(await page.locator(`li:text-is("${newNoteText}"):visible`))
+      // smallest el in the row where the /^text$/ is visible 
+      expect(await page.locator(`li:text-is("${newNoteLine}"):visible`))
 
       const notificationBanner = page.locator('.notification')
       await expect(notificationBanner).toContainText('New note created')
@@ -99,15 +100,17 @@ describe.skip('Note app', () => {
       const noteText1st = `one more note by PW ${RND_ID}`
       const noteText2nd = `yet another note by PW ${RND_ID}`
       const noteText3rd = `really... note by PW ${RND_ID}`
+      const noteButtonTxt = 'make not important'
+
 
       beforeEach(async ({ page }) => {
         // waitforia, ettei createt mene päällekkäin, kerkiää renderöidä
         await createNote(page, noteText1st)
-        await page.locator(`li:text-is("${noteText1st}"):visible`).waitFor()
+        await page.locator(`li:text-matches("${noteText1st}${noteButtonTxt}"):visible`).waitFor()
         await createNote(page, noteText2nd)
-        await page.locator(`li:text-is("${noteText2nd}"):visible`).waitFor()
+        await page.locator(`li:text-matches("${noteText2nd}${noteButtonTxt}"):visible`).waitFor()
         await createNote(page, noteText3rd)
-        await page.locator(`li:text-is("${noteText3rd}"):visible`).waitFor()
+        await page.locator(`li:text-matches("${noteText3rd}${noteButtonTxt}"):visible`).waitFor()
         // tai esim 3:s nappula:
         // page.locator('li').filter({ hasText: noteText3rd }).getByRole('button')
       })
