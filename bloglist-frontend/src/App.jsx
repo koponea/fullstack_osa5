@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+//import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Notification from './components/Notification.jsx'
 import Blog from './components/Blog'
 //import Togglable from './components/Togglable'
@@ -13,8 +14,8 @@ import { omit } from 'lodash'
 import { useNavigate } from 'react-router-dom'
 
 import {
-  Routes, Route, NavLink, // Link
-  //useMatch
+  Routes, Route, NavLink, Link,
+  useMatch
 } from 'react-router-dom'
 
 const App = () => {
@@ -58,7 +59,7 @@ const App = () => {
   }
 
   //const blogFormRef = useRef()
-  const blogRef = useRef()
+  //const blogRef = useRef()
 
   useEffect(() => {
     logger.debug('effectissa, hookissa')
@@ -172,15 +173,18 @@ const App = () => {
 
       try {
         const status = await blogService.destroy(blog.id)
-        console.log('Delete person promise fulfilled', blog.title, status)
+        console.log('Delete blog promise fulfilled', blog.title, status)
         if ([200, 204, 404].includes(status)) {
           console.log('Remove from fe', blog.id)
+          navigate('/')
           setBlogs(blogs.filter(b => b.id !== blog.id))
           notifyUser(`Deleted ${blog.title}`)
         }
       } catch (error) {
-        if (error.status === 404)
+        if (error.status === 404) {
+          navigate('/')
           notifyUser('already deleted')
+        }
         else if (error.status === 403)
           notifyUserOfError('delete not authorized')
         else
@@ -239,18 +243,29 @@ const App = () => {
     <div>
       <h2>blogs</h2>
       {blogs.map((blog) =>
-        <Blog
+        <li key={blog.id}>
+          <Link to={`/blogs/${blog.id}`}>
+            {blog.title} by {blog.author}
+          </Link>
+        </li>
+        /*<Blog
           key={blog.id}
           blog={blog}
           blogRef={blogRef}
           onLike={() => handleLike(blog)}
           onDelete={() => handleDelete(blog)}
           showDeleteButton={{ display: user && user.username === blog.creatorUname ? '' : 'none' }}
-        />
+          showLikeButton={{ display: user ? '' : 'none' }}
+        />*/
       )}
     </div>
   )
 
+  // kun url vaihtuu addressbarissa (App renders), jos url muotoa:
+  const match = useMatch('/blogs/:id')
+  const blog = match
+    ? blogs.find(note => note.id === match.params.id)
+    : null
 
   // NavLink works with the isActive, Link not
   const padding = ({ isActive }) => ({
@@ -275,7 +290,14 @@ const App = () => {
       <Routes>
         <Route path="/" element={blogsListing(blogs)} />
         <Route path="/login" element={!user && login()} />
-
+        <Route path="/blogs/:id" element={
+          <Blog blog={blog}
+            onLike={() => handleLike(blog)}
+            onDelete={() => handleDelete(blog)}
+            showDeleteButton={{ display: (blog && user) && (user.username === blog.creatorUname) ? '' : 'none' }}
+            showLikeButton={{ display: user ? '' : 'none' }}
+          />
+        } />
       </Routes>
 
       {/*!user && (
