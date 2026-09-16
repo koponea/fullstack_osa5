@@ -1,13 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import Notification from './components/Notification.jsx'
 import Blog from './components/Blog'
-import Togglable from './components/Togglable'
+//import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import LoginForm from './components/LoginForm'
-import BlogForm from './components/BlogForm'
+//import BlogForm from './components/BlogForm'
+
 import loginService from './services/login'
 import logger from '../utils/logger'
-import { omit, toString } from 'lodash'
+import { omit } from 'lodash'
+//import { omit, toString } from 'lodash'
+import { useNavigate } from 'react-router-dom'
+
+import {
+  Routes, Route, NavLink, // Link
+  //useMatch
+} from 'react-router-dom'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -15,11 +23,13 @@ const App = () => {
   const [notificationMessage, setNotificationMessage] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [url, setUrl] = useState('')
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
+  //const [url, setUrl] = useState('')
+  //const [title, setTitle] = useState('')
+  //const [author, setAuthor] = useState('')
   const [user, setUser] = useState(null)
-  const [loginVisible, setLoginVisible] = useState(false)
+  //const [loginVisible, setLoginVisible] = useState(false)
+
+  const navigate = useNavigate()
 
   const eventHandler = receivedBlogzz => {
     // rekisteroi tapahtumankasittelija get-operaatiolle
@@ -47,7 +57,7 @@ const App = () => {
     }, 5000)
   }
 
-  const blogFormRef = useRef()
+  //const blogFormRef = useRef()
   const blogRef = useRef()
 
   useEffect(() => {
@@ -69,6 +79,7 @@ const App = () => {
     }
   }, [])
 
+  /*
   const addBlog = async (event) => {
     event.preventDefault()
     console.log('creator:', user.name)
@@ -93,6 +104,7 @@ const App = () => {
       )
     }
   }
+    */
 
   const handleLike = (event) => {
     blogService
@@ -129,6 +141,7 @@ const App = () => {
       // consoliin   window.localStorage
       logger.debug('logging in user', JSON.stringify(user))
       blogService.setToken(user.token)
+      navigate('/')
       setUser(user)
       setUsername('')
       setPassword('')
@@ -144,6 +157,7 @@ const App = () => {
     try {
       window.localStorage.removeItem('loggedBlogAppUser')
       blogService.setToken(null)
+      navigate('/')
       setUser(null)
       setUsername('')
       setPassword('')
@@ -178,6 +192,7 @@ const App = () => {
     }
   }
 
+  /*
   const blogForm = () => (
     <Togglable buttonLabel='create new blog' ref={blogFormRef}>
       <BlogForm
@@ -190,65 +205,101 @@ const App = () => {
         addBlog={addBlog}
       />
     </Togglable>
-  )
+  )*/
 
-  const hideWhenVisible = { display: loginVisible ? 'none' : '' }
-  const showWhenVisible = { display: loginVisible ? '' : 'none' }
+  //const hideWhenVisible = { display: loginVisible ? 'none' : '' }
+  //const showWhenVisible = { display: loginVisible ? '' : 'none' }
 
-  const loginForm = () => (
-    <div style={showWhenVisible}>
-      <LoginForm
-        password={password}
-        username={username}
-        handleLogin={handleLogin}
-        handlePassword={({ target }) => setPassword(target.value)}
-        handleUsername={({ target }) => setUsername(target.value)}
-      />
-      <button onClick={() => setLoginVisible(false)}>cancel</button>
-
+  const login = () => (
+    <div>
+      {/*<div style={showWhenVisible}>
+        <LoginForm
+          password={password}
+          username={username}
+          handleLogin={handleLogin}
+          handlePassword={({ target }) => setPassword(target.value)}
+          handleUsername={({ target }) => setUsername(target.value)}
+        />
+        <button onClick={() => setLoginVisible(false)}>cancel</button>
+      </div>*/}
+      {<div>
+        <h2>log into application</h2>
+        <LoginForm
+          password={password}
+          username={username}
+          handleLogin={handleLogin}
+          handlePassword={({ target }) => setPassword(target.value)}
+          handleUsername={({ target }) => setUsername(target.value)}
+        />
+      </div>}
     </div>
   )
 
+  const blogsListing = (blogs) => (
+    <div>
+      <h2>blogs</h2>
+      {blogs.map((blog) =>
+        <Blog
+          key={blog.id}
+          blog={blog}
+          blogRef={blogRef}
+          onLike={() => handleLike(blog)}
+          onDelete={() => handleDelete(blog)}
+          showDeleteButton={{ display: user && user.username === blog.creatorUname ? '' : 'none' }}
+        />
+      )}
+    </div>
+  )
+
+
+  // NavLink works with the isActive, Link not
+  const padding = ({ isActive }) => ({
+    padding: 5,
+    border: isActive ? '4px solid green' : '4px solid transparent',
+  })
+
   return (
     <div>
-      {!user && (<div>
-        <h2>log into application</h2>
-        <Notification message={errorMessage} />
+      <Notification message={errorMessage} />
+      <Notification message={notificationMessage} notificationClass='notification' />
 
-        <div style={hideWhenVisible}>
-          <button onClick={() => setLoginVisible(true)}>log in</button>
-        </div>
-        {loginForm()}
+      <nav>
+        <NavLink style={padding} to="/">blogs</NavLink>
+        <NavLink style={padding} to="/login">{
+          (!user)
+            ? 'login'
+            : (<button onClick={handleLogout} data-testid="logout">logout</button>)
+        }
+        </NavLink>
+      </nav>
+      <Routes>
+        <Route path="/" element={blogsListing(blogs)} />
+        <Route path="/login" element={!user && login()} />
 
-      </div>)
-      }
+      </Routes>
 
-      {user && (
+      {/*!user && (
         <div>
-          <h2>blogs</h2>
-          <Notification message={errorMessage} />
-          <Notification message={notificationMessage} notificationClass='notification' />
-          <div>{user.name} logged in
-            <button onClick={handleLogout} data-testid="logout">logout</button>
+          <h2>log into application</h2>
+          {<div style={hideWhenVisible}>
+            <button onClick={() => setLoginVisible(true)}>log in</button>
           </div>
-          {blogForm()}
-        </div>
-      )}
+          loginForm()}
 
-      {user && (
+        </div>)
+      */}
+
+      {/*user && (
         <div>
-          {blogs.map((blog) =>
-            <Blog
-              key={blog.id}
-              blog={blog}
-              blogRef={blogRef}
-              onLike={() => handleLike(blog)}
-              onDelete={() => handleDelete(blog)}
-              showDeleteButton={{ display: user.username === blog.creatorUname ? '' : 'none' }}
-            />
-          )}
+          {<h2>blogs</h2>}
+
+          {<div>{user.name} logged in}
+          {(<button onClick={handleLogout} data-testid="logout">logout</button>)}
+          {</div>}
+          {//blogForm()
+          }
         </div>
-      )}
+      )*/}
     </div>
   )
   //}
