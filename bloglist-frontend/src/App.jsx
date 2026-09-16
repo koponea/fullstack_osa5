@@ -5,7 +5,7 @@ import Blog from './components/Blog'
 //import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import LoginForm from './components/LoginForm'
-//import BlogForm from './components/BlogForm'
+import BlogForm from './components/BlogForm'
 
 import loginService from './services/login'
 import logger from '../utils/logger'
@@ -24,9 +24,9 @@ const App = () => {
   const [notificationMessage, setNotificationMessage] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  //const [url, setUrl] = useState('')
-  //const [title, setTitle] = useState('')
-  //const [author, setAuthor] = useState('')
+  const [url, setUrl] = useState('')
+  const [title, setTitle] = useState('')
+  const [author, setAuthor] = useState('')
   const [user, setUser] = useState(null)
   //const [loginVisible, setLoginVisible] = useState(false)
 
@@ -69,7 +69,7 @@ const App = () => {
       .catch(error =>
         notifyUserOfError(`The blogs fetch not successful, ${error}`)
       )
-  }, [])
+  }) // no dep array?
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
@@ -80,14 +80,13 @@ const App = () => {
     }
   }, [])
 
-  /*
   const addBlog = async (event) => {
     event.preventDefault()
     console.log('creator:', user.name)
     const blogObject = {
       title, author, url, user: user.id
     }
-    blogFormRef.current.toggleVisibility() // a bitof hacky to call...
+    //blogFormRef.current.toggleVisibility() // a bitof hacky to call...
     const receivedBlog = await blogService.create(blogObject)
     try {
       logger.debug(receivedBlog)
@@ -105,7 +104,6 @@ const App = () => {
       )
     }
   }
-    */
 
   const handleLike = (event) => {
     blogService
@@ -196,9 +194,10 @@ const App = () => {
     }
   }
 
-  /*
+
   const blogForm = () => (
-    <Togglable buttonLabel='create new blog' ref={blogFormRef}>
+    //<Togglable buttonLabel='create new blog' ref={blogFormRef}>
+    <>
       <BlogForm
         url={url}
         author={author}
@@ -208,8 +207,9 @@ const App = () => {
         setUrl={setUrl}
         addBlog={addBlog}
       />
-    </Togglable>
-  )*/
+    </>
+    //</Togglable>
+  )
 
   //const hideWhenVisible = { display: loginVisible ? 'none' : '' }
   //const showWhenVisible = { display: loginVisible ? '' : 'none' }
@@ -280,6 +280,7 @@ const App = () => {
 
       <nav>
         <NavLink style={padding} to="/">blogs</NavLink>
+        {user && (<NavLink style={padding} to="/create">new blog</NavLink>)}
         <NavLink style={padding} to="/login">{
           (!user)
             ? 'login'
@@ -289,6 +290,7 @@ const App = () => {
       </nav>
       <Routes>
         <Route path="/" element={blogsListing(blogs)} />
+        <Route path="/create" element={user && blogForm()} />
         <Route path="/login" element={!user && login()} />
         <Route path="/blogs/:id" element={
           <Blog blog={blog}

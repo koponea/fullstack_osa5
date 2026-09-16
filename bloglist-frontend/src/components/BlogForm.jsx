@@ -1,3 +1,4 @@
+
 const BlogForm = (props) => {
   const {
     title,
@@ -8,7 +9,6 @@ const BlogForm = (props) => {
     setAuthor,
     setUrl,
     submitLabel = 'create',
-
   } = props
 
   return (
@@ -17,7 +17,7 @@ const BlogForm = (props) => {
         <h2>create new</h2>
         <div>
           <label htmlFor="titleInput" >
-                        title:
+            title:
             <input
               data-testid="title-input"
               id="titleInput"
@@ -29,7 +29,7 @@ const BlogForm = (props) => {
 
         <div>
           <label htmlFor="authorInput" >
-                        author:
+            author:
             <input
               data-testid="author-input"
               id="authorInput"
@@ -41,7 +41,7 @@ const BlogForm = (props) => {
 
         <div>
           <label htmlFor="urlInput">
-                        url:
+            url:
             <input
               data-testid="url-input"
               id="urlInput"
