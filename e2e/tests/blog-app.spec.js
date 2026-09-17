@@ -6,20 +6,25 @@ const {
   describe,
 } = require('@playwright/test')
 const {
+  blogTitleAuthorRegexp,
   createBlog,
   dataTestId,
   dataTestIdStartsWith,
   expandBlog,
   genRndId,
+  landingHeadingRx,
+  detailsHeadingRx,
   likeTheBlog,
   login,
   loginAndVerify,
   nthBlogIsDefined,
+  gotoDetailsAndLike,
   readBlogId,
   submitBlog,
   DEFAULT_USER,
   NOTIFICATION_CLASS,
 } = require('../utils/helper')
+
 import { toString } from 'lodash'
 
 const RGB_ERROR_RED = 'rgb(255, 0, 0)'
@@ -34,6 +39,7 @@ const USER_VIEWER = {
   password: 'viuviuviuviu',
   name: 'Viewerino',
 }
+const landingHeadElelment = page => page.getByRole('heading', { name: landingHeadingRx })
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -45,16 +51,18 @@ describe('Blog app', () => {
   })
 
   test('Login form is shown', async ({ page }) => {
-    const locator = page.getByText(/^log into application$/)
-    await expect(locator).toBeVisible()
+    await expect(landingHeadElelment(page)).toBeVisible()
 
-    await page.getByRole('button', { name: 'log in' }).click()
+    await page.getByRole('link', { name: /^login$/ }).click()
+
+    expect(await page.getByRole('button', { name: /^log in$/ })).toBeVisible()
+
     expect(await page.getByRole('textbox').all()).toHaveLength(2)
     expect(await page.getByLabel('username')).toBeVisible()
     expect(await page.getByLabel('password')).toBeVisible()
 
-    expect(await page.getByRole('button', { name: 'log in' })).toBeVisible()
-    expect(await page.getByRole('button', { name: 'cancel' })).toBeVisible()
+    // probably no cancel needed anymore
+    //expect(await page.getByRole('button', { name: 'cancel' })).toBeVisible()
 
     await expect(page.getByText(/logged in/)).not.toBeVisible()
   })
@@ -63,25 +71,29 @@ describe('Blog app', () => {
 
     test('Succeeds with correct credentials', async ({ page }) => {
       test.setTimeout(20_000) // login
-
-      await page.getByRole('button', { name: 'log in' }).click()
       console.log(config.USERNAME_DEFAULT, config.USER_NAME_DEFAULT)
+
+      await page.getByTestId('nav-login').click()
+
       expect(await page.getByRole('textbox').all()).toHaveLength(2)
 
       await page.getByLabel('username').fill(config.USERNAME_DEFAULT)
       await page.getByLabel('password').fill(config.PASSWORD_DEFAULT)
 
-      await page.getByTestId('submit-login').click() // login
+      await page.getByTestId('submit-login').click()
+      await expect(await landingHeadElelment(page)).toBeVisible() // wait for login
 
-      await expect(page.getByText(`${config.USER_NAME_DEFAULT} logged in`)).toBeVisible()
+      // will this ever be again?
+      //await expect(page.getByText(`${config.USER_NAME_DEFAULT} logged in`)).toBeVisible()
+
+      const logoutButton = await page.getByTestId('nav-logout-button')
+      expect(logoutButton).toBeVisible()
+      expect(logoutButton).toHaveText(/logout/)
 
       expect(page.getByTestId(NOTIFICATION_CLASS.error)).not.toBeVisible()
       expect(page.getByTestId(NOTIFICATION_CLASS.info)).not.toBeVisible()
 
-      const logoutButton = await page.getByTestId('logout').first() // wait for login
-      expect(logoutButton).toBeVisible()
-
-      expect(await page.locator(dataTestId('create-new-blog'))).toBeVisible({ timeout: 10_000 })
+      expect(await page.locator(dataTestId('nav-create'))).toBeVisible({ timeout: 10_000 })
     })
 
     test('Fails with wrong credentials', async ({ page }) => {
@@ -108,6 +120,8 @@ describe('Blog app', () => {
       const blog = { ...DEFAULT_BLOG }
 
       await submitBlog(page, blog)
+      await expect(await page.getByRole('heading', landingHeadingRx)).toBeVisible()
+
 
       // smallest el in the row where the /.*text.*/ is visible
       expect(await page.locator(`li:text-is("${blog.title} by ${blog.author}"):visible`))
@@ -144,21 +158,28 @@ describe('Blog app', () => {
 
       const likeLoc = dataTestIdStartsWith('like-button-') // do not know id
 
-      const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
-        .filter({ hasText: blogB.title })
+      /*const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
+        .filter({ hasText: blogB.title })*/
 
-      const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' })
+      const blogBRegexp = blogTitleAuthorRegexp(blogB)
+      expect(await page.getByRole('link', { name: blogBRegexp }).waitFor())
+      await page.getByRole('link', { name: blogBRegexp }).click()
+
+      /*const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' })
       await expandButton.click()
+      expect(blogLoc.getByRole('button').first()).toContainText('hide')*/
 
-      expect(blogLoc.getByRole('button').first()).toContainText('hide')
+      const detailsHeadElelment =
+        await page.getByRole('heading', { name: blogTitleAuthorRegexp(blogB, true) })
+      await expect(detailsHeadElelment).toBeVisible()
+      await expect(page.locator(likeLoc)).toBeVisible()
 
-      await blogLoc.getByText(/^likes: (\s{0,})?\d{1,}/).waitFor() //single
+      await page.getByText(/^likes (\s{0,})?\d{1,}/).waitFor() // data loaded
 
-      const likeButton = blogLoc.locator(likeLoc)
-      await likeButton.click({ timeout: 20_000 })
+      await page.locator(likeLoc).click({ timeout: 20_000 })
 
-      await blogLoc.getByText(/^likes:/).waitFor() //single
-      await blogLoc.getByText(/^likes: 1like$/).waitFor()
+      await page.getByText(/^likes/).waitFor() //single
+      await page.getByText(/^likes 1like$/).waitFor()
 
       console.log('the fastest way: afterwards GET also the likes and verify')
     })
@@ -166,6 +187,8 @@ describe('Blog app', () => {
     test('One of those can be deleted', async ({ page }) => {
       const blog = { ...blogForDel }
       const dialogQ = `Remove blog ${blog.title} by ${blog.author} ?`
+      const deleteLoc = dataTestIdStartsWith('delete-button-') // do not know id
+
 
       // listener for the window.confirm
       page.on('dialog', async (dialog) => {
@@ -175,12 +198,17 @@ describe('Blog app', () => {
         await dialog.accept(); //  OK
       })
 
+      /*
       const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
-        .filter({ hasText: blog.title })
+        .filter({ hasText: blog.title }) */
 
       const countOfBlogs = await page.locator(dataTestIdStartsWith('blog-')).count()
 
-      await expandBlog(page, test, blog)
+      //await expandBlog(page, test, blog)
+
+      const blogRegexp = blogTitleAuthorRegexp(blog)
+      expect(await page.getByRole('link', { name: blogRegexp }).waitFor())
+      await page.getByRole('link', { name: blogRegexp }).click()
 
       // maybe an api GET?
       page.on('response', data => {
@@ -191,11 +219,12 @@ describe('Blog app', () => {
         expect(resData.status === '204') // delete ok
       });
 
-      const deleteButton = blogLoc.getByRole('button')
-        .filter({ hasText: 'remove' }) // single
-      expect(await blogLoc.getByRole('button').filter({ hasText: 'remove' }).all()).toHaveLength(1)
+      const detailsHeadElelment =
+        await page.getByRole('heading', { name: blogTitleAuthorRegexp(blog, true) })
+      await expect(detailsHeadElelment).toBeVisible()
 
-      await deleteButton.click({ timeout: 20_000 }) // the listener wakes up
+      await expect(page.locator(deleteLoc)).toBeVisible()
+      await page.locator(deleteLoc).click({ timeout: 20_000 })
 
       // Ei, koska ei ole dialogikomponentti, pitää olla kuuntelija ylh
       // await page.getByRole('dialog').getByRole('button', {name: 'OK'}).click()
@@ -215,20 +244,27 @@ describe('Blog app', () => {
       const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
         .filter({ hasText: blog.title })
 
-      await page.getByRole('button', { name: 'logout' }).click()
-      await page.getByRole('button', { name: 'log in' }).waitFor()
+      await page.getByTestId('nav-logout-button').click()
 
-      // these open directly when logged out
-      await page.getByLabel('username').fill(USER_VIEWER.username)
-      await page.getByLabel('password').fill(USER_VIEWER.password)
+      await page.getByTestId('nav-login').waitFor()
+      await page.getByTestId('nav-login').click()
+      await loginAndVerify({ page, ...USER_VIEWER })
       console.debug('logging in as:', USER_VIEWER.username)
-      await page.getByTestId('submit-login').click()
-      expect(await page.getByText(`${USER_VIEWER.name} logged in`)).toBeVisible()
 
-      await expandBlog(page, test, blog)
+      await page.getByTestId('nav-logout-button').waitFor()
 
-      expect(await blogLoc.getByRole('button').filter({ hasText: 'remove' })
-        .all()).toHaveLength(0)
+      // will this ever be again
+      //expect(await page.getByText(`${USER_VIEWER.name} logged in`)).toBeVisible()
+
+      await blogLoc.click()
+
+      const detailsHeadElelment =
+        await page.getByRole('heading', { name: blogTitleAuthorRegexp(blog, true) })
+      await expect(detailsHeadElelment).toBeVisible()
+
+      const deleteLoc = dataTestIdStartsWith('delete-button-')
+      expect(await page.locator(deleteLoc).all()).toHaveLength(1)
+      expect(await page.locator(deleteLoc)).toBeHidden()
     })
 
     test('The blogs are always in ascening order regarding likes', async ({ page }) => {
@@ -239,8 +275,7 @@ describe('Blog app', () => {
       // [A,B,C,D]
       let blogs = [{ ...blogA }, { ...blogB }, { ...blogC }, { ...blogForDel }]
       const titlesRegexpAtoD =
-        blogs.map(blog => new RegExp(`^${blog.title} ${blog.author}`))
-
+        blogs.map(blog => blogTitleAuthorRegexp(blog))
 
       // get blog id:s to blogs for test-dataid:s, be api's could b handy here
       console.log('The code looks a bit -CYPRESSY- to me as javascript :)')
@@ -250,16 +285,7 @@ describe('Blog app', () => {
       blogs[3].id = await readBlogId(page, blogs[3])
       //console.log(blogs)
 
-      // likes (hiding) and all blogs
-      expect(await page.locator(likeLoc).all()).toHaveLength(4) // hiding buttons
       expect(await page.locator(dataTestIdStartsWith('blog-')).all()).toHaveLength(4)
-
-      // expand all blogs, looping messes up
-      // await page.getByTestId(`blog-${blogs[3].id}`).getByRole('button').first().click()
-      await expandBlog(page, test, blogs[3])
-      await expandBlog(page, test, blogs[2])
-      await expandBlog(page, test, blogs[1])
-      await expandBlog(page, test, blogs[0])
 
       /* CHECK: [A, B, D, C] is the creation order
       / COULD fail due to REST but should not since created now via UI so in page states
@@ -273,25 +299,28 @@ describe('Blog app', () => {
       await nthBlogIsDefined(page, test, titlesRegexpAtoD[2], 3)
 
       // like in random order, looping messes up
-      await likeTheBlog(page, test, blogs[2])
-      await likeTheBlog(page, test, blogs[1])
+      await gotoDetailsAndLike(page, test, blogs[2])
+      await page.getByText(/^likes 1like$/).waitFor()
+      await gotoDetailsAndLike(page, test, blogs[1])
+      await page.getByText(/^likes 1like$/).waitFor()
+      await page.getByTestId('nav-blogs').click()
 
-      await page.getByTestId(`blog-${blogs[0].id}`).getByText(/^likes: 0like$/).waitFor()
+      await page.getByTestId('nav-blogs').click()
       expect(await page.locator(dataTestIdStartsWith('blog-'))
-        .nth(2).getByText(new RegExp(`^${blogs[0].title} ${blogs[0].author}`))).toBeVisible()
+        .nth(2).getByText(titlesRegexpAtoD[0])).toBeVisible()
 
-      await likeTheBlog(page, test, blogs[3])
-      await likeTheBlog(page, test, blogs[3])
-      await likeTheBlog(page, test, blogs[2])
-      await likeTheBlog(page, test, blogs[3])
-      await page.getByText(/^likes: 3like$/).waitFor()
+      await gotoDetailsAndLike(page, test, blogs[3])
+      await gotoDetailsAndLike(page, test, blogs[3])
+      await page.getByText(/^likes 2like$/).waitFor()
+      await gotoDetailsAndLike(page, test, blogs[2])
+      await page.getByText(/^likes 2like$/).waitFor()
+      await gotoDetailsAndLike(page, test, blogs[3])
+      await page.getByText(/^likes 3like$/).waitFor()
 
-      console.log('CHECK likes and order, [D, C, B, A] after likes')
-      const likeRegexp = [/^likes: 3like$/, /^likes: 2like$/, /^likes: 1like$/, /^likes: 0like$/]
-      await nthBlogIsDefined(page, test, likeRegexp[0], 0) // count -> order
-      await nthBlogIsDefined(page, test, likeRegexp[1], 1)
-      await nthBlogIsDefined(page, test, likeRegexp[2], 2)
-      await nthBlogIsDefined(page, test, likeRegexp[3], 3)
+
+      await page.getByTestId('nav-blogs').click()
+
+      console.log('CHECK order, [D, C, B, A] after likes')
 
       await nthBlogIsDefined(page, test, titlesRegexpAtoD[3], 0) // blogs -> order
       await nthBlogIsDefined(page, test, titlesRegexpAtoD[2], 1)

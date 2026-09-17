@@ -9,7 +9,7 @@ import BlogForm from './components/BlogForm'
 
 import loginService from './services/login'
 import logger from '../utils/logger'
-import { omit } from 'lodash'
+import { omit, snakeCase } from 'lodash'
 //import { omit, toString } from 'lodash'
 import { useNavigate } from 'react-router-dom'
 
@@ -250,7 +250,7 @@ const App = () => {
       <h2>blogs</h2>
       {blogs.map((blog) =>
         <li key={blog.id}>
-          <Link to={`/blogs/${blog.id}`}>
+          <Link data-testid={`blog-${blog.id}`} to={`/blogs/${blog.id}`}>
             {blog.title} by {blog.author}
           </Link>
         </li>
@@ -278,19 +278,19 @@ const App = () => {
     padding: 5,
     border: isActive ? '4px solid green' : '4px solid transparent',
   })
-
+ 
   return (
     <div>
       <Notification message={errorMessage} />
       <Notification message={notificationMessage} notificationClass='notification' />
 
-      <nav>
-        <NavLink style={padding} to="/">blogs</NavLink>
-        {user && (<NavLink style={padding} to="/create">new blog</NavLink>)}
-        <NavLink style={padding} to="/login">{
+      <nav data-testid='navigation-bar'>
+        <NavLink data-testid='nav-blogs' style={padding} to="/">blogs</NavLink>
+        {user && (<NavLink data-testid='nav-create' style={padding} to="/create">new blog</NavLink>)}
+        <NavLink data-testid='nav-login' style={padding} to="/login">{
           (!user)
             ? 'login'
-            : (<button onClick={handleLogout} data-testid="logout">logout</button>)
+            : (<button onClick={handleLogout} data-testid="nav-logout-button">logout</button>)
         }
         </NavLink>
       </nav>

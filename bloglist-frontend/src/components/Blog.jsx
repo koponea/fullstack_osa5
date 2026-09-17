@@ -11,6 +11,7 @@ const blogStyle = {
 const Blog = ({ blog, blogRef = null, onLike, onDelete, showDeleteButton, showLikeButton }) => {
   if (!blog) return null  // deleted
   const testId = `blog-${blog.id}` // the id is not secret outside
+  const testIdDetails = `blog-details-${blog.id}` // the id is not secret outside
   const buttonTestId = `like-button-${blog.id}`
   const deleteTestId = `delete-button-${blog.id}`
 
@@ -39,12 +40,12 @@ const Blog = ({ blog, blogRef = null, onLike, onDelete, showDeleteButton, showLi
         </div >)
       }
       {!blogRef && (
-        <>
+        <div >
           <h2>{blog.author}: {blog.title}</h2>
-          <div data-testid={testId} >
+          <div data-testid={testIdDetails}>
             {details()}
           </div >
-        </>)
+        </div>)
       }
     </>
   )

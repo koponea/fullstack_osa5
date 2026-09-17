@@ -10,6 +10,10 @@ const DEFAULT_USER = {
 
 const NOTIFICATION_CLASS = { error: 'error', info: 'notification' }
 
+const landingHeadingRx = /^blogs$/
+const newHeadingRx = /^create new$/
+const loginHeadingRx = /^log into application$/
+
 const dataTestId = (locator) => `[data-testid=${locator}]`
 const dataTestIdStartsWith = (locator) => `[data-testid^=${locator}]`
 
@@ -20,7 +24,7 @@ const login = async ({
     username,
     password,
 }) => {
-    await page.getByRole('button', { name: 'log in' }).click()
+    await page.getByTestId('nav-login').click()
     await page.getByLabel('username').fill(username)
     await page.getByLabel('password').fill(password)
     await page.getByTestId('submit-login').click()
@@ -30,11 +34,14 @@ const loginAndVerify = async ({
     page,
     username = config.USERNAME_DEFAULT,
     password = config.PASSWORD_DEFAULT,
-    name = config.USER_NAME_DEFAULT,
+    //name = config.USER_NAME_DEFAULT,
 }) => {
     console.info('logging in as:', username)
+    await expect(await page.getByRole('heading', loginHeadingRx)).toBeVisible()
     await login({ page, username, password })
-    expect(await page.getByText(`${name} logged in`)).toBeVisible()
+    //expect(await page.getByText(`${name} logged in`)).toBeVisible()
+    await expect(await page.getByRole('heading', landingHeadingRx)).toBeVisible() // wait for login
+
 }
 
 const createNote = async (page, noteText) => {
@@ -87,16 +94,17 @@ const notificationBannerLocator = (
         element: '.notification', match, suffix: visibility, partial
     })
 
-const blogTitleAuthorRegexp = (blog, notification = false) =>
-    notification
-        ? new RegExp(`.*${blog.title}.*by.*${blog.author}.*`)
-        : new RegExp(`.*${blog.title} ${blog.author}.*`)
+const blogTitleAuthorRegexp = (blog, header = false) =>
+    header
+        ? new RegExp(`.*${blog.author}: ${blog.title}.*`)
+        : new RegExp(`.*${blog.title}.*by.*${blog.author}.*`)
 
 const submitBlog = async (page, blog) => {
 
-    expect(await page.locator(`${dataTestId('crete-new-blog')}`))
-    const open = await page.locator(`${dataTestId('create-new-blog')}:visible`)
+    expect(await page.locator(`${dataTestId('nav-crete')}`))
+    const open = await page.locator(`${dataTestId('nav-create')}:visible`)
     await open.click()
+    await expect(await page.getByRole('heading', newHeadingRx)).toBeVisible()
 
     await page.getByTestId('title-input').fill(blog.title)
     await page.getByTestId('author-input').fill(blog.author)
@@ -107,17 +115,15 @@ const submitBlog = async (page, blog) => {
 
 const createBlog = async (page, blog) => {
 
-    const rowRegexp = blogTitleAuthorRegexp(blog)
-    const bannerRegexp = blogTitleAuthorRegexp(blog, true)
+    const blogRegexp = blogTitleAuthorRegexp(blog)
 
     await submitBlog(page, blog)
 
-    await page.getByText(rowRegexp).waitFor()
-    await page.getByText(bannerRegexp).waitFor()
+    await page.getByText(blogRegexp).first()
 
     expect(await page
-        .locator(notificationBannerLocator(bannerRegexp, ':visible'))).toBeDefined()
-    expect(await page.getByText(rowRegexp).waitFor())
+        .locator(notificationBannerLocator(blogRegexp, ':visible'))).toBeDefined()
+    expect(await page.getByRole('link', { name: blogRegexp }).waitFor())
     // tai esim 3:s nappula:
     // page.locator('li').filter({ hasText: noteText3rd }).getByRole('button')
 }
@@ -133,19 +139,38 @@ const expandBlog = async (page, test, blog) => {
 
     expect(await blogLoc.getByRole('button').first()).toContainText('hide')
     const id = await readBlogId(page, blog)
-    await page.getByTestId(`blog-${id}`).getByText(/^likes:.*like$/).waitFor()
+    await page.getByTestId(`blog-${id}`).getByText(/^likes.*like$/).waitFor()
+    //await page.getByTestId(`blog-${id}`).getByText(/^likes:.*like$/).waitFor()
 }
 
 const likeTheBlog = async (page, test, blog) => {
     test.setTimeout(30_000) // if narrow pipe
+    expect(await page.getByTestId(`blog-${blog.id}`)).toBeDefined()
+    //await expect(await page.getByText(/^likes.*like$/)).toBeVisible()
+    //await expect(await page.getByTestId(`like-button-${blog.id}`)).toBeEnabled()
+
+    expect(await page.getByTestId(`like-button-${blog.id}`)).toBeDefined()
+
+
     await page.getByTestId(`like-button-${blog.id}`).click({ timeout: 20_000 })
+    //await page.get(`like-button-${blog.id}`)
+
 }
+
+const gotoDetailsAndLike = async (page, test, blog) => {
+    await page.goto(`/blogs/${blog.id}`)
+    await page.getByRole('heading', { name: blogTitleAuthorRegexp(blog, true) })
+
+    await expect(await page.getByTestId(`blog-details-${blog.id}`)).toBeVisible()
+    await likeTheBlog(page, test, blog)
+}
+
 
 const nthBlogIsDefined = async (page, test, expTxt, index = 0) => {
     test.setTimeout(30_000) // if narrow pipe
 
     await page.locator(dataTestIdStartsWith('blog-')).getByText(expTxt).waitFor()
-    await page.getByText(expTxt).waitFor()
+    await page.getByRole('link', { name: expTxt }).waitFor()
     expect(await page
         .locator(dataTestIdStartsWith('blog-'))
         .nth(index)
@@ -160,6 +185,7 @@ const readBlogId = async (page, blog) => {
     return testId.slice(5)
 }
 export {
+    blogTitleAuthorRegexp,
     submitBlog,
     createBlog,
     createNote,
@@ -168,10 +194,12 @@ export {
     expandBlog,
     genRndId,
     likeTheBlog,
+    landingHeadingRx,
     login,
     loginAndVerify,
     notificationBannerLocator,
     nthBlogIsDefined,
+    gotoDetailsAndLike,
     readBlogId,
     DEFAULT_USER,
     NOTIFICATION_CLASS
