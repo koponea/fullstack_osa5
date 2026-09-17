@@ -88,12 +88,15 @@ const App = () => {
     }
     //blogFormRef.current.toggleVisibility() // a bitof hacky to call...
     const receivedBlog = await blogService.create(blogObject)
+
     try {
       logger.debug(receivedBlog)
       notifyUser(`a new blog ${title} by ${author} added`)
       receivedBlog.creator = user.name
       receivedBlog.creatorUname = user.username
+
       setBlogs(blogs.concat(receivedBlog).sort((a, b) => b.likes - a.likes))
+      navigate('/')
       setUrl('')
       setAuthor('')
       setTitle('')
@@ -140,8 +143,9 @@ const App = () => {
       // consoliin   window.localStorage
       logger.debug('logging in user', JSON.stringify(user))
       blogService.setToken(user.token)
-      navigate('/')
+
       setUser(user)
+      navigate('/')
       setUsername('')
       setPassword('')
     } catch {
@@ -156,6 +160,7 @@ const App = () => {
     try {
       window.localStorage.removeItem('loggedBlogAppUser')
       blogService.setToken(null)
+
       navigate('/')
       setUser(null)
       setUsername('')
@@ -174,6 +179,7 @@ const App = () => {
         console.log('Delete blog promise fulfilled', blog.title, status)
         if ([200, 204, 404].includes(status)) {
           console.log('Remove from fe', blog.id)
+
           navigate('/')
           setBlogs(blogs.filter(b => b.id !== blog.id))
           notifyUser(`Deleted ${blog.title}`)
