@@ -69,7 +69,7 @@ const App = () => {
       .catch(error =>
         notifyUserOfError(`The blogs fetch not successful, ${error}`)
       )
-  }) // no dep array?
+  }, []) // no dep array? must hace this, otherwise starts rolling eventhandler
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
