@@ -1,52 +1,48 @@
-import Togglable from './Togglable'
+import { useParams } from 'react-router-dom'
 
+/*
 const blogStyle = {
   paddingTop: 10,
   paddingLeft: 2,
   border: 'solid',
   borderWidth: 1,
   marginBottom: 5
-}
+}*/
 
-const Blog = ({ blog, blogRef = null, onLike, onDelete, showDeleteButton, showLikeButton }) => {
-  if (!blog) return null  // deleted
-  const testId = `blog-${blog.id}` // the id is not secret outside
-  const testIdDetails = `blog-details-${blog.id}` // the id is not secret outside
-  const buttonTestId = `like-button-${blog.id}`
-  const deleteTestId = `delete-button-${blog.id}`
+const Blog = ({ blog, onLike, onDelete, showDeleteButton, showLikeButton, notifyUser }) => {
+  const paramId = useParams().id
+
+  if (!blog) return null // deleted
+  const id = paramId || blog.id ? blog.id : null
+
+  const handleDelete = () => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author} ?`)) {
+      onDelete(blog)
+    } else {
+      console.log(`id ${id}: ${blog.title} delete canceled`)
+      notifyUser(`Delete of ${blog.title} canceled`)
+    }
+  }
 
   const details = () => (
     <>
       <div>{blog.url}</div>
       <div>likes {blog.likes ? blog.likes : 0}
-        <button style={showLikeButton} onClick={onLike} data-testid={buttonTestId}>like</button>
+        <button style={showLikeButton} onClick={onLike} data-testid={`like-button-${id}`}>like</button>
       </div>
       <div>Added by {blog.creator}</div>
-      <button style={showDeleteButton} onClick={onDelete} data-testid={deleteTestId}>remove</button>
+      <button style={showDeleteButton} onClick={handleDelete} data-testid={`delete-button-${id}`}>remove</button>
     </>
   )
 
-  const togglableDetails = () => (
-    <Togglable buttonLabel='show' hideLabel='hide' ref={blogRef} buttonPlacing='immediate'>
-      {details()}
-    </Togglable>)
-
   return (
     <>
-      {blogRef && (
-        <div data-testid={testId} style={blogStyle}>
-          <>{blog.title} {blog.author}</>
-          {togglableDetails()}
-        </div >)
-      }
-      {!blogRef && (
-        <div >
-          <h2>{blog.author}: {blog.title}</h2>
-          <div data-testid={testIdDetails}>
-            {details()}
-          </div >
-        </div>)
-      }
+      <div >
+        <h2>{blog.author}: {blog.title}</h2>
+        <div data-testid={`blog-details-${id}`}>
+          {details()}
+        </div >
+      </div>
     </>
   )
 }

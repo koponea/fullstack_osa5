@@ -1,26 +1,21 @@
-//import { useState, useEffect, useRef } from 'react'
 import { useState, useEffect } from 'react'
 import Notification from './components/Notification.jsx'
 import Blog from './components/Blog'
-//import Togglable from './components/Togglable'
-import blogService from './services/blogs'
-import LoginForm from './components/LoginForm'
+import Login from './components/Login'
 import BlogForm from './components/BlogForm'
+import BlogList from './components/BlogList'
 
+import blogService from './services/blogs'
 import loginService from './services/login'
 import logger from '../utils/logger'
-import { omit, snakeCase } from 'lodash'
-//import { omit, toString } from 'lodash'
-import { useNavigate } from 'react-router-dom'
+import { omit } from 'lodash'
 
-import {
-  Routes, Route, NavLink, Link,
-  useMatch
+import { Routes, Route, NavLink, useMatch, useNavigate,
 } from 'react-router-dom'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [errorMessage, setErrorMessage] = useState(null) // !!??
+  const [errorMessage, setErrorMessage] = useState(null)
   const [notificationMessage, setNotificationMessage] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -28,7 +23,6 @@ const App = () => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [user, setUser] = useState(null)
-  //const [loginVisible, setLoginVisible] = useState(false)
 
   const navigate = useNavigate()
 
@@ -57,9 +51,6 @@ const App = () => {
       setNotificationMessage(null)
     }, 5000)
   }
-
-  //const blogFormRef = useRef()
-  //const blogRef = useRef()
 
   useEffect(() => {
     logger.debug('effectissa, hookissa')
@@ -170,39 +161,28 @@ const App = () => {
     }
   }
 
-  const handleDelete = async (blog) => {
+  const handleDelete = async blog => {
     console.log('delete clicked on', blog.id)
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.author} ?`)) {
-
-      try {
-        const status = await blogService.destroy(blog.id)
-        console.log('Delete blog promise fulfilled', blog.title, status)
-        if ([200, 204, 404].includes(status)) {
-          console.log('Remove from fe', blog.id)
-
-          navigate('/')
-          setBlogs(blogs.filter(b => b.id !== blog.id))
-          notifyUser(`Deleted ${blog.title}`)
-        }
-      } catch (error) {
-        if (error.status === 404) {
-          navigate('/')
-          notifyUser('already deleted')
-        }
-        else if (error.status === 403)
-          notifyUserOfError('delete not authorized')
-        else
-          notifyUserOfError(`could not delete entry, ${error}`)
+    try {
+      const status = await blogService.destroy(blog.id)
+      if ([200, 204, 404].includes(status)) {
+        setBlogs(blogs.filter(b => b.id !== blog.id))
+        notifyUser(`Deleted ${blog.title}`)
+        navigate('/') // linkasee siis aina takaisin listasivulle
       }
-    } else {
-      console.log(`id ${blog.id}: ${blog.title} delete canceled`)
-      notifyUser(`Delete of ${blog.title} canceled`)
+    } catch (error) {
+      if (error.status === 404) {
+        navigate('/')
+        notifyUser('already deleted')
+      }
+      else if (error.status === 403)
+        notifyUserOfError('delete not authorized')
+      else
+        notifyUserOfError(`could not delete entry, ${error}`)
     }
   }
 
-
   const blogForm = () => (
-    //<Togglable buttonLabel='create new blog' ref={blogFormRef}>
     <>
       <BlogForm
         url={url}
@@ -214,63 +194,12 @@ const App = () => {
         addBlog={addBlog}
       />
     </>
-    //</Togglable>
-  )
-
-  //const hideWhenVisible = { display: loginVisible ? 'none' : '' }
-  //const showWhenVisible = { display: loginVisible ? '' : 'none' }
-
-  const login = () => (
-    <div>
-      {/*<div style={showWhenVisible}>
-        <LoginForm
-          password={password}
-          username={username}
-          handleLogin={handleLogin}
-          handlePassword={({ target }) => setPassword(target.value)}
-          handleUsername={({ target }) => setUsername(target.value)}
-        />
-        <button onClick={() => setLoginVisible(false)}>cancel</button>
-      </div>*/}
-      {<div>
-        <h2>log into application</h2>
-        <LoginForm
-          password={password}
-          username={username}
-          handleLogin={handleLogin}
-          handlePassword={({ target }) => setPassword(target.value)}
-          handleUsername={({ target }) => setUsername(target.value)}
-        />
-      </div>}
-    </div>
-  )
-
-  const blogsListing = (blogs) => (
-    <div>
-      <h2>blogs</h2>
-      {blogs.map((blog) =>
-        <li key={blog.id}>
-          <Link data-testid={`blog-${blog.id}`} to={`/blogs/${blog.id}`}>
-            {blog.title} by {blog.author}
-          </Link>
-        </li>
-        /*<Blog
-          key={blog.id}
-          blog={blog}
-          blogRef={blogRef}
-          onLike={() => handleLike(blog)}
-          onDelete={() => handleDelete(blog)}
-          showDeleteButton={{ display: user && user.username === blog.creatorUname ? '' : 'none' }}
-          showLikeButton={{ display: user ? '' : 'none' }}
-        />*/
-      )}
-    </div>
   )
 
   // kun url vaihtuu addressbarissa (App renders), jos url muotoa:
   const match = useMatch('/blogs/:id')
   const blog = match
-    ? blogs.find(note => note.id === match.params.id)
+    ? blogs.find(blog => blog.id === match.params.id)
     : null
 
   // NavLink works with the isActive, Link not
@@ -278,7 +207,7 @@ const App = () => {
     padding: 5,
     border: isActive ? '4px solid green' : '4px solid transparent',
   })
- 
+
   return (
     <div>
       <Notification message={errorMessage} />
@@ -294,45 +223,31 @@ const App = () => {
         }
         </NavLink>
       </nav>
+
       <Routes>
-        <Route path="/" element={blogsListing(blogs)} />
+        <Route path="/" element={<BlogList blogs={blogs} />} />
         <Route path="/create" element={user && blogForm()} />
-        <Route path="/login" element={!user && login()} />
+        <Route path="/login" element={!user && <Login
+          username={username}
+          password={password}
+          handleLogin={handleLogin}
+          handleUsername={({ target }) => setUsername(target.value)}
+          handlePassword={({ target }) => setPassword(target.value)}
+        />
+        } />
         <Route path="/blogs/:id" element={
           <Blog blog={blog}
             onLike={() => handleLike(blog)}
-            onDelete={() => handleDelete(blog)}
+            onDelete={handleDelete}
             showDeleteButton={{ display: (blog && user) && (user.username === blog.creatorUname) ? '' : 'none' }}
             showLikeButton={{ display: user ? '' : 'none' }}
+            notifyUser={notifyUser}
           />
         } />
+
       </Routes>
-
-      {/*!user && (
-        <div>
-          <h2>log into application</h2>
-          {<div style={hideWhenVisible}>
-            <button onClick={() => setLoginVisible(true)}>log in</button>
-          </div>
-          loginForm()}
-
-        </div>)
-      */}
-
-      {/*user && (
-        <div>
-          {<h2>blogs</h2>}
-
-          {<div>{user.name} logged in}
-          {(<button onClick={handleLogout} data-testid="logout">logout</button>)}
-          {</div>}
-          {//blogForm()
-          }
-        </div>
-      )*/}
     </div>
   )
-  //}
 }
 
 export default App

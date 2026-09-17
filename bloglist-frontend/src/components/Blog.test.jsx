@@ -25,7 +25,7 @@ describe('<Blog />', () => {
       //test('renders content and hides invisibles', async () => {
       test('renders content and shows data', async () => {
 
-        await screen.findByTestId(`blog-${blog.id}`)
+        await screen.findByTestId(`blog-details-${blog.id}`)
 
         expect(screen.getByText('K Kiehkura: Component testing is ... react')).toBeDefined()
         expect(screen.queryByText('K Kiehkura', { exact: false })).toBeVisible()
@@ -48,7 +48,7 @@ describe('<Blog />', () => {
         //const user = userEvent.setup()
         // esim lähteekö delete-kutsu?
 
-        await screen.findByTestId(`blog-${blog.id}`)
+        await screen.findByTestId(`blog-details-${blog.id}`)
 
         expect(await screen.findByText(blog.author, { exact: false })).toBeVisible()
         expect(screen.getByText(blog.creator, { exact: false })).toBeVisible()
@@ -105,7 +105,7 @@ describe('<Blog />', () => {
 
       test('renders content and shows data', async () => {
 
-        await screen.findByTestId(`blog-${blog.id}`)
+        await screen.findByTestId(`blog-details-${blog.id}`)
 
         expect(screen.getByText('K Kiehkura: Component testing is ... react')).toBeDefined()
         expect(screen.queryByText('K Kiehkura', { exact: false })).toBeVisible()
@@ -127,7 +127,7 @@ describe('<Blog />', () => {
       test('renders and shows the full blog but hides buttons', async () => {
         //const user = userEvent.setup()
 
-        await screen.findByTestId(`blog-${blog.id}`)
+        await screen.findByTestId(`blog-details-${blog.id}`)
 
         expect(await screen.findByText(blog.author, { exact: false })).toBeVisible()
         expect(screen.queryByText(blog.creator, { exact: false })).toBeVisible()
@@ -187,7 +187,8 @@ describe('<Blog />', () => {
       />)
 
       const user = userEvent.setup()
-      await screen.findByTestId(`blog-${blog.id}`)
+      expect(await screen.findByTestId(`blog-details-${blog.id}`))
+        .toBeDefined()
 
       /*
       const showButton = await screen.findByText('show')

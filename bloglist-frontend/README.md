@@ -15,6 +15,10 @@ Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy
 - __5c: React-sovellusten testaaminen__
 5.13-15: blogilistan testit, step1-3: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa
 - __5d: End to end -testaus__
+5.16-23: Playwright e2e-testit Blogilista-appille, dialogien käsittely
+- __5e: FE routtaus ja modulirefaktorointi, tyylikirjastot, ut&e2e -säätö__
+5.24-28: React-routtaus, refaktorointi ja kaikkien rikkoontuneiden testien korjaus ja säätö
+(5.29-32: Tyylikirjastot)
 
 __KOODI JA TESTIT AJANTASAISESTI YHTENEVÄT, JÄRJESTYKSESSÄ KAIKISSA REPOISSA JA _KAIKKI TEHTÄVÄT OVAT VALMIITA_ (kaikki materiaalissa annetut tehtävät palautettu/tehty lisätehtävineen (*), useasti sopivilta osin häiritsemättömiä osia ennen varsinaista tehtäväkommittia)__
 

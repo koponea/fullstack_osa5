@@ -11,6 +11,6 @@ Tehtävien vaatimukset on kuvattu kurssin sivuilla, https://fullstackopen.com/os
 - __5b: props.children ja komponentin ref__
 - __5c: React-sovellusten testaaminen__
 - __5d: End to end -testaus__
-
+- __5e: FE! routtaus ja modulirefaktorointi, tyylikirjastot, ut&e2e -testausten säätö__
 
 __KOODI JA TESTIT AJANTASAISESTI YHTENEVÄT, JÄRJESTYKSESSÄ KAIKISSA REPOISSA JA _KAIKKI TEHTÄVÄT OVAT VALMIITA_ (kaikki materiaalissa annetut tehtävät palautettu/tehty lisätehtävineen (*), useasti sopivilta osin häiritsemättömiä osia ennen varsinaista tehtäväkommittia)__

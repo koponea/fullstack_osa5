@@ -61,11 +61,14 @@ Tässä osassa on otettu pohjaksi erikseen valmiina annettu osan 3 frontend, mut
 - __5a: Kirjautuminen frontendissä__
 Tehtävät 5.1-5.4, blogs-frontin tokeneilla sisäänkirjautuminen ja blogien lisääminen, kirjautuminen pysyvä ja notifikaatiot.
 - __5b: props.children ja komponentin ref__
-Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy vain tarvittaessa, likejen päivittely, muotoilua ja blogin poisto.
+Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi -lomake/form näkyy vain tarvittaessa, likejen päivittely, muotoilua ja blogin poisto.
 - __5c: React-sovellusten testaaminen__
-5.13-16: blogilistan testit, step1-4: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa. BlogForm:in toiminta.
+5.13-16: blogilistan UT-testit, step1-4: Blog renderöityy ja hide/show komponentissa, käyttäjän simulointi, funktioiden simulointi nappeja painellessa. BlogForm:in toiminta.
 - __5d: End to end -testaus, Playwright -hakemisto: e2e__
-5.17-5.23: stepit 1-7: Playwright-testit Blogilista-appille, projekti, säädöt ja ensimmäiset caset, loginin tarkistus ja login. Kirjautunut käyttäjä pystyy luomaan blogin, ja sitä pystytään likettämään. Käyttäjä joka ei ole luonut kyseistä blogia ei saa nähdä poistonappulaa (fe-muutos myös). Delete ja window-confirm -dialogin käsittely blogin luojan poistaessa blogin. Viimeisenä testinä blogien verifiointiskenaario, jossa käyttäjä likettelee blogeja ja ne itsestäänjärjestyvät lennossa likejenmukaiseen alenevaan järjestykseen.
+5.17-5.23: stepit 1-7: Playwright-testit Blogilista-appille, projekti, säädöt ja ensimmäiset caset, loginin tarkistus ja login. Kirjautunut käyttäjä pystyy luomaan blogin, ja sitä pystytään likettämään. Käyttäjä joka ei ole luonut kyseistä blogia ei saa nähdä poistonappulaa (fe-muutos myös). Delete ja window-confirm -dialogin käsittely blogin luojan poistaessa blogin. Viimeisenä testinä blogien verifiointiskenaario, jossa käyttäjä likettelee blogeja ja ne itsestäänjärjestyvät näkymään lennossa likejenmukaiseen alenevaan järjestykseen.
+- __5e: FE React router ja tyylikirjastot, PW e2e ja Vitest -säädöt näille__
+5.24-5.28: routed blogs, stepit 1-5: Frontendin säätäminen routatuksi, navigaatiopalkki ja FE-toteutuksen tarkempi refaktorointi komponentteihin. Olemassolevien Vitest ja Playwright -testien korjaaminen ja sovitus kun refaktorointi ja uudet toiminnallisuuden muutokset on tehty.
+(5.29-32: Tyylikirjastot)
 
 __Huom: Playwright-projektiin kuuluu e2e/.env -tiedosto, katso käyttöohjeet e2e/example.env -tiedostosta__
 
