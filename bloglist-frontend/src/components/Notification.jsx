@@ -1,5 +1,8 @@
+import { Alert } from '@mui/material'
+
 const Notification = ({ message, notificationClass = 'error' }) => {
   const notificationStyle = {
+    /*
     color: notificationClass === 'error' ? 'red' : 'green',
     fontSize: '20px', // or 'small'
     background: 'lightgrey',
@@ -7,15 +10,22 @@ const Notification = ({ message, notificationClass = 'error' }) => {
     borderRadius: '5px',
     padding: '10px',
     marginBottom: '10px'
+    */
+    marginTop: 10,
+    marginBottom: 10
   }
   if (message === null) {
     return null
   }
 
   return (
-    <div style={notificationStyle} className={notificationClass} data-testid={notificationClass}>
+    <Alert
+      style={notificationStyle}
+      className={notificationClass}
+      data-testid={notificationClass}
+      severity={notificationClass}>
       {message}
-    </div>
+    </Alert>
   )
 }
 

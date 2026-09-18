@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Container, } from '@mui/material'
 
 const BlogList = ({ blogs }) => {
 
@@ -6,14 +7,17 @@ const BlogList = ({ blogs }) => {
 
   return (
     <div>
-      <h2>blogs</h2>
-      {blogs.map((blog) =>
-        <li key={blog.id}>
-          <Link data-testid={`blog-${blog.id}`} to={`/blogs/${blog.id}`}>
-            {blog.title} by {blog.author}
-          </Link>
-        </li>
-      )}
+      <h2 data-testid="blogs-header">blogs</h2>
+      <Container>
+        {blogs.map(({ id, title, author }) =>
+          <li key={id}>
+            <Link data-testid={`blog-${id}`} to={`/blogs/${id}`}>
+              {title} by {author}
+            </Link>
+          </li>
+        )}
+      </Container>
+
     </div>
   )
 }

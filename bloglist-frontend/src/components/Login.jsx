@@ -19,12 +19,12 @@ const Login = ({
   )
 
   return (
-    <div>
+    <>
       <div>
         <h2>log into application</h2>
         {loginForm()}
       </div>
-    </div>
+    </>
   )
   //}
 }

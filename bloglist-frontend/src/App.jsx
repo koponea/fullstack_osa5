@@ -1,3 +1,6 @@
+import { Container, AppBar, Toolbar, Box, Button as NaviButton } from '@mui/material'
+import { Button } from './components/StyledComponents'
+
 import { useState, useEffect } from 'react'
 import Notification from './components/Notification.jsx'
 import Blog from './components/Blog'
@@ -10,7 +13,8 @@ import loginService from './services/login'
 import logger from '../utils/logger'
 import { omit } from 'lodash'
 
-import { Routes, Route, NavLink, useMatch, useNavigate,
+import {
+  Routes, Route, NavLink, useMatch, useNavigate,
 } from 'react-router-dom'
 
 const App = () => {
@@ -203,50 +207,68 @@ const App = () => {
     : null
 
   // NavLink works with the isActive, Link not
-  const padding = ({ isActive }) => ({
+  const style = ({ isActive }) => ({
     padding: 5,
-    border: isActive ? '4px solid green' : '4px solid transparent',
+    border: isActive ? '4px solid lightgreen' : '4px solid transparent',
   })
+  const hover = { '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }
 
   return (
-    <div>
-      <Notification message={errorMessage} />
-      <Notification message={notificationMessage} notificationClass='notification' />
+    <Container>
+      <div>
 
-      <nav data-testid='navigation-bar'>
-        <NavLink data-testid='nav-blogs' style={padding} to="/">blogs</NavLink>
-        {user && (<NavLink data-testid='nav-create' style={padding} to="/create">new blog</NavLink>)}
-        <NavLink data-testid='nav-login' style={padding} to="/login">{
-          (!user)
-            ? 'login'
-            : (<button onClick={handleLogout} data-testid="nav-logout-button">logout</button>)
-        }
-        </NavLink>
-      </nav>
+        <AppBar position="static" data-testid='navigation-bar'>
+          <Toolbar sx={{ justifyContent: 'space-between' }}>
+            <h2>Blog App</h2>
+            <Box sx={{ justifyContent: 'flex-end' }}>
 
-      <Routes>
-        <Route path="/" element={<BlogList blogs={blogs} />} />
-        <Route path="/create" element={user && blogForm()} />
-        <Route path="/login" element={!user && <Login
-          username={username}
-          password={password}
-          handleLogin={handleLogin}
-          handleUsername={({ target }) => setUsername(target.value)}
-          handlePassword={({ target }) => setPassword(target.value)}
-        />
-        } />
-        <Route path="/blogs/:id" element={
-          <Blog blog={blog}
-            onLike={() => handleLike(blog)}
-            onDelete={handleDelete}
-            showDeleteButton={{ display: (blog && user) && (user.username === blog.creatorUname) ? '' : 'none' }}
-            showLikeButton={{ display: user ? '' : 'none' }}
-            notifyUser={notifyUser}
+              <NaviButton color="inherit" component={NavLink} data-testid='nav-blogs'
+                style={style} sx={hover} to="/">blogs</NaviButton>
+              {user && (<NaviButton color="inherit" component={NavLink} data-testid='nav-create'
+                style={style} sx={hover} to="/create">new blog</NaviButton>)}
+              <NaviButton color="inherit" component={NavLink} data-testid='nav-login'
+                style={style} sx={hover} to="/login">{
+                  (!user)
+                    ? 'login'
+                    : (<Button color="inherit" onClick={handleLogout} data-testid="nav-logout-button">logout</Button>)
+                }
+              </NaviButton>
+
+            </Box>
+          </Toolbar>
+
+        </AppBar>
+
+        <Notification message={errorMessage} />
+        <Notification message={notificationMessage} notificationClass='success' />
+
+        <Routes>
+          <Route path="/" element={<BlogList blogs={blogs} />} />
+          <Route path="/create" element={user && blogForm()} />
+          <Route path="/login" element={!user && <Login
+            username={username}
+            password={password}
+            handleLogin={handleLogin}
+            handleUsername={({ target }) => setUsername(target.value)}
+            handlePassword={({ target }) => setPassword(target.value)}
           />
-        } />
+          } />
+          <Route path="/blogs/:id" element={
+            <Blog blog={blog}
+              onLike={() => handleLike(blog)}
+              onDelete={handleDelete}
+              showDeleteButton={{
+                display: (blog && user) && (user.username === blog.creatorUname) ? '' : 'none',
+                color: 'red',
+              }}
+              showLikeButton={{ display: user ? '' : 'none' }}
+              notifyUser={notifyUser}
+            />
+          } />
 
-      </Routes>
-    </div>
+        </Routes>
+      </div>
+    </Container>
   )
 }
 

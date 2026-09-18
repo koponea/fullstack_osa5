@@ -2,6 +2,18 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
 
+const queryForLikes = async (screen, likes) => {
+  const regexp = new RegExp(`^${likes}(\\s{1,})?likes.*`)
+  const likesElement = await screen.queryByText(regexp)
+  return likesElement
+}
+
+const waitForAnyLikes = async screen => {
+  const regexp = new RegExp('^\\d{1,}(\\s{1,})?likes.*')
+  const likesElement = await screen.findByText(regexp)
+  return likesElement
+}
+
 describe('<Blog />', () => {
   const blog = {
     title: 'Component testing is ... react',
@@ -22,21 +34,18 @@ describe('<Blog />', () => {
         />)
       })
 
-      //test('renders content and hides invisibles', async () => {
       test('renders content and shows data', async () => {
 
         await screen.findByTestId(`blog-details-${blog.id}`)
 
-        expect(screen.getByText('K Kiehkura: Component testing is ... react')).toBeDefined()
-        expect(screen.queryByText('K Kiehkura', { exact: false })).toBeVisible()
+        expect(screen.getByText(/^Component testing is ... react$/)).toBeDefined()
+        expect(screen.queryByText(/^by K Kiehkura$/)).toBeVisible() // single
 
-        const likes = screen.queryByText(/.*19840374.*/)
-        //expect(likes).not.toBeVisible()
+        const likes = await queryForLikes(screen, 19840374)
         expect(likes).toBeDefined()
         expect(likes).toBeVisible()
 
         const url = screen.getByText(blog.url, { exact: false })
-        //expect(url).not.toBeVisible()
         expect(url).toBeDefined()
         expect(url).toBeVisible()
 
@@ -53,16 +62,10 @@ describe('<Blog />', () => {
         expect(await screen.findByText(blog.author, { exact: false })).toBeVisible()
         expect(screen.getByText(blog.creator, { exact: false })).toBeVisible()
 
-        /*const showButton = await screen.findByText('show')
-        await user.click(showButton)
-
-        expect(await screen.findByText(blog.author, { exact: false })).toBeVisible()
-        expect(screen.getByText(blog.creator)).toBeVisible()*/
-
         const deleteButton = await screen.findByTestId(`delete-button-${blog.id}`)
 
         const likeButton = await screen.findByTestId(`like-button-${blog.id}`)
-        const likes = await screen.findByText(/^likes (\s{0,})?\d{1,}/)
+        const likes = await waitForAnyLikes(screen)
         screen.debug(likes)
         const url = await screen.findByText(blog.url, { exact: false })
 
@@ -75,19 +78,9 @@ describe('<Blog />', () => {
         expect(likes.textContent).toContain(blog.likes)
         expect(url).toBeVisible()
         expect(screen
-          .getByText('K Kiehkura: Component testing is ... react'))
+          .getByText(/^Component testing is ... react$/)) // hdr
           .toBeVisible()
         expect(screen.getByText(blog.creator, { exact: false })).toBeVisible()
-
-        /*
-        const hideButton = screen.queryByText('hide')
-        await user.click(hideButton)
-
-        expect(screen.getByText(
-          'Component testing is ... react K Kiehkura'))
-          .toBeVisible()
-        expect(likes).not.toBeVisible()
-        expect(url).not.toBeVisible()*/
 
         screen.debug(likes)
         screen.debug(url)
@@ -107,16 +100,14 @@ describe('<Blog />', () => {
 
         await screen.findByTestId(`blog-details-${blog.id}`)
 
-        expect(screen.getByText('K Kiehkura: Component testing is ... react')).toBeDefined()
+        expect(screen.getByText(/^Component testing is ... react$/)).toBeDefined() // hdr
         expect(screen.queryByText('K Kiehkura', { exact: false })).toBeVisible()
 
         const likes = screen.queryByText(/.*19840374.*/)
-        //expect(likes).not.toBeVisible()
         expect(likes).toBeDefined()
         expect(likes).toBeVisible()
 
         const url = screen.getByText(blog.url, { exact: false })
-        //expect(url).not.toBeVisible()
         expect(url).toBeDefined()
         expect(url).toBeVisible()
 
@@ -125,23 +116,14 @@ describe('<Blog />', () => {
       })
 
       test('renders and shows the full blog but hides buttons', async () => {
-        //const user = userEvent.setup()
-
         await screen.findByTestId(`blog-details-${blog.id}`)
 
         expect(await screen.findByText(blog.author, { exact: false })).toBeVisible()
-        expect(screen.queryByText(blog.creator, { exact: false })).toBeVisible()
+        expect(await screen.queryByText(blog.creator, { exact: false })).toBeVisible()
 
-        /*const showButton = await screen.findByText('show')
-        await user.click(showButton)
+        const likesElement = await waitForAnyLikes(screen) // button in it
 
-        expect(await screen.findByText(blog.author, { exact: false })).toBeVisible()
-        expect(screen.getByText(blog.creator)).toBeVisible()*/
-
-        //const likes = await screen.findByText(/^(\s{0,})?\d{1,}/)
-        const likes = await screen.findByText(/likes(\s{1,})?\d{1,}.*/) //button!!
-
-        screen.debug(likes)
+        screen.debug(likesElement)
         const url = await screen.findByText(blog.url, { exact: false })
 
         const deleteButtons = screen.queryAllByTestId(`delete-button-${blog.id}`)
@@ -152,25 +134,16 @@ describe('<Blog />', () => {
         expect(likeButtons).toHaveLength(1)
         expect(likeButtons[0]).not.toBeVisible()
 
-        expect(likes).toBeVisible()
-        expect(likes.textContent).toContain(blog.likes)
+        expect(likesElement).toBeVisible()
+        expect(likesElement.textContent).toContain(blog.likes)
         expect(url).toBeVisible()
         expect(screen
-          .getByText('K Kiehkura: Component testing is ... react'))
+          .getByText(/^Component testing is ... react$/)) // details hdr
           .toBeVisible()
         expect(screen.getByText(blog.creator, { exact: false })).toBeVisible()
 
-        /*const hideButton = screen.queryByText('hide')
-        //await user.click(hideButton)
-
-        expect(screen.getByText(
-          'Component testing is ... react K Kiehkura'))
-          .toBeVisible()
-        expect(likes).not.toBeVisible()
-        expect(url).not.toBeVisible()*/
-
         screen.debug(likeButtons)
-        screen.debug(likes)
+        screen.debug(likesElement)
         screen.debug(url)
         screen.debug()
       })
@@ -190,13 +163,10 @@ describe('<Blog />', () => {
       expect(await screen.findByTestId(`blog-details-${blog.id}`))
         .toBeDefined()
 
-      /*
-      const showButton = await screen.findByText('show')
-      await user.click(showButton)*/
       expect(screen.getByText(blog.creator, { exact: false })).toBeVisible()
 
       const likeButton = await screen.findByTestId(`like-button-${blog.id}`)
-      const likeElement = await screen.findByText(/^likes (\s{0,})?\d{1,}/)
+      const likeElement = await waitForAnyLikes(screen)
       screen.debug(likeElement)
 
       expect(likeElement.textContent).toContain(blog.likes)

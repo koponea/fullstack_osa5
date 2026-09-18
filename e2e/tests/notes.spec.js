@@ -88,7 +88,7 @@ describe('Note app', () => {
       // smallest el in the row where the /^text$/ is visible 
       expect(await page.locator(`li:text-is("${newNoteLine}"):visible`))
 
-      const notificationBanner = page.locator('.notification')
+      const notificationBanner = page.locator('.success')
       await expect(notificationBanner).toContainText('New note created')
       await expect(notificationBanner).toHaveCSS('border-style', 'solid')
       await expect(notificationBanner).toHaveCSS('color', RGB_NOTIFICATION_GREEN)

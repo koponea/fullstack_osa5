@@ -1,4 +1,6 @@
 
+import { Button, TextField } from './StyledComponents'
+
 const BlogForm = (props) => {
   const {
     title,
@@ -17,8 +19,9 @@ const BlogForm = (props) => {
         <h2>create new</h2>
         <div>
           <label htmlFor="titleInput" >
-            title:
-            <input
+            <TextField
+              placeholder="title"
+              label="title"
               data-testid="title-input"
               id="titleInput"
               value={title}
@@ -29,8 +32,9 @@ const BlogForm = (props) => {
 
         <div>
           <label htmlFor="authorInput" >
-            author:
-            <input
+            <TextField
+              placeholder="author"
+              label="author"
               data-testid="author-input"
               id="authorInput"
               value={author}
@@ -41,8 +45,9 @@ const BlogForm = (props) => {
 
         <div>
           <label htmlFor="urlInput">
-            url:
-            <input
+            <TextField
+              placeholder="url"
+              label="url"
               data-testid="url-input"
               id="urlInput"
               value={url}
@@ -50,7 +55,9 @@ const BlogForm = (props) => {
             />
           </label>
         </div>
-        <button type="submit" data-testid="submit-blog">{submitLabel} </button>
+        <p>
+          <Button type="submit" data-testid="submit-blog">{submitLabel} </Button>
+        </p>
       </div>
     </form>
   )

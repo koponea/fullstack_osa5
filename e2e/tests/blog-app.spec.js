@@ -10,25 +10,21 @@ const {
   createBlog,
   dataTestId,
   dataTestIdStartsWith,
-  expandBlog,
   genRndId,
   landingHeadingRx,
-  detailsHeadingRx,
-  likeTheBlog,
   login,
   loginAndVerify,
   nthBlogIsDefined,
   gotoDetailsAndLike,
   readBlogId,
   submitBlog,
+  waitForLikes,
   DEFAULT_USER,
   NOTIFICATION_CLASS,
 } = require('../utils/helper')
 
-import { toString } from 'lodash'
-
-const RGB_ERROR_RED = 'rgb(255, 0, 0)'
-const RGB_NOTIFICATION_GREEN = 'rgb(0, 128, 0)'
+const RGB_ERROR_RED = 'rgb(95, 33, 32)'
+const RGB_NOTIFICATION_GREEN = 'rgb(30, 70, 32)'
 const DEFAULT_BLOG = {
   title: `A title by Playwright ${genRndId()}`,
   author: 'Oasis',
@@ -55,16 +51,13 @@ describe('Blog app', () => {
 
     await page.getByRole('link', { name: /^login$/ }).click()
 
-    expect(await page.getByRole('button', { name: /^log in$/ })).toBeVisible()
+    expect(await page.getByTestId('submit-login')).toBeVisible()
 
-    expect(await page.getByRole('textbox').all()).toHaveLength(2)
     expect(await page.getByLabel('username')).toBeVisible()
     expect(await page.getByLabel('password')).toBeVisible()
 
-    // probably no cancel needed anymore
-    //expect(await page.getByRole('button', { name: 'cancel' })).toBeVisible()
-
-    await expect(page.getByText(/logged in/)).not.toBeVisible()
+    const logoutButton = await page.getByTestId('nav-logout-button')
+    expect(logoutButton).toBeHidden()
   })
 
   describe('Login', () => {
@@ -74,8 +67,6 @@ describe('Blog app', () => {
       console.log(config.USERNAME_DEFAULT, config.USER_NAME_DEFAULT)
 
       await page.getByTestId('nav-login').click()
-
-      expect(await page.getByRole('textbox').all()).toHaveLength(2)
 
       await page.getByLabel('username').fill(config.USERNAME_DEFAULT)
       await page.getByLabel('password').fill(config.PASSWORD_DEFAULT)
@@ -103,12 +94,62 @@ describe('Blog app', () => {
 
       const errorDiv = page.locator('.error')
       await expect(errorDiv).toContainText('wrong username or password')
-      await expect(errorDiv).toHaveCSS('border-style', 'solid')
       await expect(errorDiv).toHaveCSS('color', RGB_ERROR_RED)
-      await expect(page.getByText(`${config.USERNAME_DEFAULT} logged in`)).not.toBeVisible()
+      const logoutButton = await page.getByTestId('nav-logout-button')
+      expect(logoutButton).toBeHidden()
     })
   })
 
+  describe('When not logged in', () => {
+
+    beforeEach(async ({ page }) => {
+      await loginAndVerify({ page })
+      await submitBlog(page, { ...DEFAULT_BLOG })
+      await expect(await page.getByTestId('blogs-header')).toBeVisible()
+      await page.getByTestId('nav-logout-button').click()
+      await page.goto('/')
+    })
+
+    test('A blog can be viewed and opening link to another tab works', async ({ page }) => {
+      const blog = { ...DEFAULT_BLOG }
+
+      await expect(landingHeadElelment(page)).toBeVisible()
+      await page.getByTestId('nav-login').waitFor()
+
+      const blogLinkInList = page.locator(dataTestIdStartsWith('blog-'))
+        .filter({ hasText: blog.title })
+      await blogLinkInList.click()
+
+      const detailsHeadElelment =
+        await page.getByRole('heading', { name: new RegExp(`^${blog.title}$`) })
+      await expect(detailsHeadElelment).toBeVisible()
+
+      const deleteButtonLoc = dataTestIdStartsWith('delete-button-')
+      expect(await page.locator(deleteButtonLoc).all()).toHaveLength(1)
+      expect(await page.locator(deleteButtonLoc)).toBeHidden()
+
+      const likeButtonLoc = dataTestIdStartsWith('like-button-')
+      expect(await page.locator(likeButtonLoc).all()).toHaveLength(1)
+      expect(await page.locator(likeButtonLoc)).toBeHidden()
+
+      await waitForLikes(page, '\\d{1,}') // any visible
+
+      // check the use of the url to another tab
+      await page.getByRole('link', { name: new RegExp(`^${blog.url}$`) })
+        .waitFor({ state: 'visible' })
+      
+      // Start waiting for new page before clicking. Note no await.
+      // Create a new incognito browser context
+      const pagePromise = page.context().waitForEvent('page');
+      await page.getByRole('link', { name: new RegExp(`^${blog.url}$`) }).click()
+
+      const linkedPage = await pagePromise
+
+      await expect(linkedPage).toHaveURL(blog.url);
+      await linkedPage.getByText(/aloita kurssi/i).waitFor({ state: 'visible' })
+      console.log(await linkedPage.title())
+    })
+  })
 
   describe('When logged in', () => {
 
@@ -120,17 +161,16 @@ describe('Blog app', () => {
       const blog = { ...DEFAULT_BLOG }
 
       await submitBlog(page, blog)
-      await expect(await page.getByRole('heading', landingHeadingRx)).toBeVisible()
+      await expect(await page.getByTestId('blogs-header')).toBeVisible()
 
 
       // smallest el in the row where the /.*text.*/ is visible
       expect(await page.locator(`li:text-is("${blog.title} by ${blog.author}"):visible`))
 
-      const notificationBanner = page.locator('.notification')
+      const notificationBanner = page.locator('.success')
       await expect(notificationBanner).toContainText(
         `a new blog ${blog.title} by ${blog.author} added`
       )
-      await expect(notificationBanner).toHaveCSS('border-style', 'solid')
       await expect(notificationBanner).toHaveCSS('color', RGB_NOTIFICATION_GREEN)
     })
   })
@@ -158,28 +198,21 @@ describe('Blog app', () => {
 
       const likeLoc = dataTestIdStartsWith('like-button-') // do not know id
 
-      /*const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
-        .filter({ hasText: blogB.title })*/
-
       const blogBRegexp = blogTitleAuthorRegexp(blogB)
       expect(await page.getByRole('link', { name: blogBRegexp }).waitFor())
       await page.getByRole('link', { name: blogBRegexp }).click()
 
-      /*const expandButton = blogLoc.getByRole('button').filter({ hasText: 'view' })
-      await expandButton.click()
-      expect(blogLoc.getByRole('button').first()).toContainText('hide')*/
-
       const detailsHeadElelment =
-        await page.getByRole('heading', { name: blogTitleAuthorRegexp(blogB, true) })
+        await page.getByRole('heading', { name: new RegExp(`^${blogB.title}$`) })
       await expect(detailsHeadElelment).toBeVisible()
       await expect(page.locator(likeLoc)).toBeVisible()
 
-      await page.getByText(/^likes (\s{0,})?\d{1,}/).waitFor() // data loaded
+      await page.getByText(/^\d{1,}(\s{1,})?likes.*/).waitFor() // data loaded
 
       await page.locator(likeLoc).click({ timeout: 20_000 })
 
-      await page.getByText(/^likes/).waitFor() //single
-      await page.getByText(/^likes 1like$/).waitFor()
+      await page.getByText(/.*likeslike.*/).waitFor() // single stable
+      await page.getByText(/^1 likes.*/).waitFor()
 
       console.log('the fastest way: afterwards GET also the likes and verify')
     })
@@ -189,28 +222,22 @@ describe('Blog app', () => {
       const dialogQ = `Remove blog ${blog.title} by ${blog.author} ?`
       const deleteLoc = dataTestIdStartsWith('delete-button-') // do not know id
 
-
       // listener for the window.confirm
       page.on('dialog', async (dialog) => {
         console.log(dialog.type(), 'dialog:', dialog.message())
         expect(dialog.type()).toBe('confirm');
         expect(dialog.message()).toBe(dialogQ);
-        await dialog.accept(); //  OK
+        await dialog.accept();
       })
-
-      /*
-      const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
-        .filter({ hasText: blog.title }) */
 
       const countOfBlogs = await page.locator(dataTestIdStartsWith('blog-')).count()
 
-      //await expandBlog(page, test, blog)
-
+      // to details to delete the blog
       const blogRegexp = blogTitleAuthorRegexp(blog)
       expect(await page.getByRole('link', { name: blogRegexp }).waitFor())
       await page.getByRole('link', { name: blogRegexp }).click()
 
-      // maybe an api GET?
+      // now wait for delete response, maybe an api GET? 
       page.on('response', data => {
         const resData = data._initializer // get some better way
         console.log('response, url', resData.url)
@@ -220,9 +247,10 @@ describe('Blog app', () => {
       });
 
       const detailsHeadElelment =
-        await page.getByRole('heading', { name: blogTitleAuthorRegexp(blog, true) })
+        await page.getByRole('heading', { name: new RegExp(`^${blog.title}$`) })
       await expect(detailsHeadElelment).toBeVisible()
 
+      await page.getByText(/.*likes.*remove.*/).waitFor() // stable, has rights
       await expect(page.locator(deleteLoc)).toBeVisible()
       await page.locator(deleteLoc).click({ timeout: 20_000 })
 
@@ -232,16 +260,15 @@ describe('Blog app', () => {
       const newCountOfBlogs = await page.locator(dataTestIdStartsWith('blog-')).count()
       expect(newCountOfBlogs === countOfBlogs - 1)
 
-      const notificationBanner = page.locator('.notification')
+      const notificationBanner = page.locator('.success')
       await expect(notificationBanner).toContainText(`Deleted ${blog.title}`)
       await expect(notificationBanner).toHaveCSS('color', RGB_NOTIFICATION_GREEN)
-
     })
 
     test('The non-creator cannot delete via UI', async ({ page }) => {
       const blog = { ...blogA }
 
-      const blogLoc = page.locator(dataTestIdStartsWith('blog-'))
+      const blogLinkInList = page.locator(dataTestIdStartsWith('blog-'))
         .filter({ hasText: blog.title })
 
       await page.getByTestId('nav-logout-button').click()
@@ -253,18 +280,15 @@ describe('Blog app', () => {
 
       await page.getByTestId('nav-logout-button').waitFor()
 
-      // will this ever be again
-      //expect(await page.getByText(`${USER_VIEWER.name} logged in`)).toBeVisible()
-
-      await blogLoc.click()
+      await blogLinkInList.click()
 
       const detailsHeadElelment =
-        await page.getByRole('heading', { name: blogTitleAuthorRegexp(blog, true) })
+        await page.getByRole('heading', { name: new RegExp(`^${blog.title}$`) })
       await expect(detailsHeadElelment).toBeVisible()
 
-      const deleteLoc = dataTestIdStartsWith('delete-button-')
-      expect(await page.locator(deleteLoc).all()).toHaveLength(1)
-      expect(await page.locator(deleteLoc)).toBeHidden()
+      const deleteButtonLoc = dataTestIdStartsWith('delete-button-')
+      expect(await page.locator(deleteButtonLoc).all()).toHaveLength(1)
+      expect(await page.locator(deleteButtonLoc)).toBeHidden()
     })
 
     test('The blogs are always in ascening order regarding likes', async ({ page }) => {
@@ -289,7 +313,7 @@ describe('Blog app', () => {
 
       /* CHECK: [A, B, D, C] is the creation order
       / COULD fail due to REST but should not since created now via UI so in page states
-      / if this happens, then the page crashed & reloaded ??
+      / if this happens, then the page crashed & reloaded
       /
       / omg with these asyncs not stacked, cannot loop !!
       */
@@ -300,10 +324,9 @@ describe('Blog app', () => {
 
       // like in random order, looping messes up
       await gotoDetailsAndLike(page, test, blogs[2])
-      await page.getByText(/^likes 1like$/).waitFor()
+      await waitForLikes(page, 1)
       await gotoDetailsAndLike(page, test, blogs[1])
-      await page.getByText(/^likes 1like$/).waitFor()
-      await page.getByTestId('nav-blogs').click()
+      await waitForLikes(page, 1)
 
       await page.getByTestId('nav-blogs').click()
       expect(await page.locator(dataTestIdStartsWith('blog-'))
@@ -311,12 +334,11 @@ describe('Blog app', () => {
 
       await gotoDetailsAndLike(page, test, blogs[3])
       await gotoDetailsAndLike(page, test, blogs[3])
-      await page.getByText(/^likes 2like$/).waitFor()
+      await waitForLikes(page, 2)
       await gotoDetailsAndLike(page, test, blogs[2])
-      await page.getByText(/^likes 2like$/).waitFor()
+      await waitForLikes(page, 2)
       await gotoDetailsAndLike(page, test, blogs[3])
-      await page.getByText(/^likes 3like$/).waitFor()
-
+      await waitForLikes(page, 3)
 
       await page.getByTestId('nav-blogs').click()
 

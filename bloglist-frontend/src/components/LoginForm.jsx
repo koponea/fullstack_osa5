@@ -1,3 +1,6 @@
+
+import { Button, PasswordTextField, UsernameTextField } from './StyledComponents'
+
 const LoginForm = ({
   password,
   username,
@@ -8,33 +11,34 @@ const LoginForm = ({
 }) => {
 
   return (
-    <div>
+    <>
       < form onSubmit={handleLogin} >
         <div>
           <label>
-            username
-            <input
-              type="text"
+            <UsernameTextField
+              placeholder="give username here"
+              data-testid="username-input"
+              label="username"
               value={username}
               onChange={handleUsername}
             />
           </label>
-        </div>
-        <div>
           <label>
-            password
-            <input
-              type="password"
+            <PasswordTextField
+              placeholder="give password here"
+              data-testid="password-input"
+              label="password"
               value={password}
               onChange={handlePassword}
             />
           </label>
         </div>
-        <button type="submit" data-testid="submit-login">{submitLabel}
-        </button>
+        <p>
+          <Button type="submit" data-testid="submit-login">{submitLabel}
+          </Button>
+        </p>
       </form >
-    </div>
-
+    </>
   )
 }
 

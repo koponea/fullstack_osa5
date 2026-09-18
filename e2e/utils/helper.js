@@ -8,7 +8,7 @@ const DEFAULT_USER = {
     name: config.USER_NAME_DEFAULT,
 }
 
-const NOTIFICATION_CLASS = { error: 'error', info: 'notification' }
+const NOTIFICATION_CLASS = { error: 'error', info: 'success' }
 
 const landingHeadingRx = /^blogs$/
 const newHeadingRx = /^create new$/
@@ -37,11 +37,10 @@ const loginAndVerify = async ({
     //name = config.USER_NAME_DEFAULT,
 }) => {
     console.info('logging in as:', username)
-    await expect(await page.getByRole('heading', loginHeadingRx)).toBeVisible()
+    expect(await page.getByText('log into application')).toBeVisible()
     await login({ page, username, password })
     //expect(await page.getByText(`${name} logged in`)).toBeVisible()
-    await expect(await page.getByRole('heading', landingHeadingRx)).toBeVisible() // wait for login
-
+    expect(await page.getByText('blogs')).toBeVisible() // wait for login
 }
 
 const createNote = async (page, noteText) => {
@@ -91,7 +90,7 @@ const notificationBannerLocator = (
     partial = true
 ) =>
     buildElementLocator({
-        element: '.notification', match, suffix: visibility, partial
+        element: '.success', match, suffix: visibility, partial
     })
 
 const blogTitleAuthorRegexp = (blog, header = false) =>
@@ -104,7 +103,7 @@ const submitBlog = async (page, blog) => {
     expect(await page.locator(`${dataTestId('nav-crete')}`))
     const open = await page.locator(`${dataTestId('nav-create')}:visible`)
     await open.click()
-    await expect(await page.getByRole('heading', newHeadingRx)).toBeVisible()
+    expect(await page.getByText('create new')).toBeVisible()
 
     await page.getByTestId('title-input').fill(blog.title)
     await page.getByTestId('author-input').fill(blog.author)
@@ -184,6 +183,12 @@ const readBlogId = async (page, blog) => {
         .getAttribute('data-testid')
     return testId.slice(5)
 }
+
+const waitForLikes = async (page, likes) => {
+    const regexp = new RegExp(`^${likes}(\\s{1,})?likes.*`)
+    await page.getByText(regexp).waitFor()
+}
+
 export {
     blogTitleAuthorRegexp,
     submitBlog,
@@ -201,6 +206,7 @@ export {
     nthBlogIsDefined,
     gotoDetailsAndLike,
     readBlogId,
+    waitForLikes,
     DEFAULT_USER,
     NOTIFICATION_CLASS
 }

@@ -1,13 +1,7 @@
 import { useParams } from 'react-router-dom'
+import { Button } from './StyledComponents'
+import { Card, Container } from '@mui/material'
 
-/*
-const blogStyle = {
-  paddingTop: 10,
-  paddingLeft: 2,
-  border: 'solid',
-  borderWidth: 1,
-  marginBottom: 5
-}*/
 
 const Blog = ({ blog, onLike, onDelete, showDeleteButton, showLikeButton, notifyUser }) => {
   const paramId = useParams().id
@@ -24,25 +18,40 @@ const Blog = ({ blog, onLike, onDelete, showDeleteButton, showLikeButton, notify
     }
   }
 
+  const style = ({
+    padding: 5,
+    border: '10px solid transparent'
+  })
+  const authorStyle = ({
+    'font-size': 'larger',
+    'font-weight': 'bold'
+  })
+
   const details = () => (
-    <>
-      <div>{blog.url}</div>
-      <div>likes {blog.likes ? blog.likes : 0}
-        <button style={showLikeButton} onClick={onLike} data-testid={`like-button-${id}`}>like</button>
-      </div>
-      <div>Added by {blog.creator}</div>
-      <button style={showDeleteButton} onClick={handleDelete} data-testid={`delete-button-${id}`}>remove</button>
-    </>
+
+    <Container style={style}>
+      <>
+        <div style={authorStyle} >by {blog.author}</div>
+        <a href={blog.url} target="_blank" rel="noopener noreferrer">
+          {blog.url}
+        </a>
+        <div>Added by {blog.creator} </div>
+        <div>{blog.likes ? blog.likes : 0} likes
+          <Button style={showLikeButton} onClick={onLike} data-testid={`like-button-${id}`}>like</Button>
+          <Button style={showDeleteButton} onClick={handleDelete} data-testid={`delete-button-${id}`}>remove</Button>
+        </div>
+      </>
+    </Container>
   )
 
   return (
     <>
-      <div >
-        <h2>{blog.author}: {blog.title}</h2>
+      <Card elevation={2} style={style}>
+        <h2>{blog.title}</h2>
         <div data-testid={`blog-details-${id}`}>
           {details()}
         </div >
-      </div>
+      </Card>
     </>
   )
 }
