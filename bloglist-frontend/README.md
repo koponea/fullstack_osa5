@@ -18,7 +18,7 @@ Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi blogi -lomake näkyy
 5.16-23: Playwright e2e-testit Blogilista-appille, dialogien käsittely
 - __5e: FE routtaus ja modulirefaktorointi, tyylikirjastot, ut&e2e -säätö__
 5.24-28: React-routtaus, refaktorointi ja kaikkien rikkoontuneiden testien korjaus ja säätö
-(5.29-32: Tyylikirjastot)
+5.29-32: Tyylikirjastot. testien fixaus kun FE ulkonäkö muuttui. Viimeiset kpl:een tehtävät.
 
 __KOODI JA TESTIT AJANTASAISESTI YHTENEVÄT, JÄRJESTYKSESSÄ KAIKISSA REPOISSA JA _KAIKKI TEHTÄVÄT OVAT VALMIITA_ (kaikki materiaalissa annetut tehtävät palautettu/tehty lisätehtävineen (*), useasti sopivilta osin häiritsemättömiä osia ennen varsinaista tehtäväkommittia)__
 

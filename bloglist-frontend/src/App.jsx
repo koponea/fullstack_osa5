@@ -103,28 +103,31 @@ const App = () => {
     }
   }
 
-  const handleLike = (event) => {
-    blogService
-      .update(event.id,
+  const handleLike = async (event) => {
+    console.log('like clicked for', blog.id)
+    try {
+      // for sure since manipulated
+      const blogCreator = { creator: blog.creator, uname: blog.creatorUname }
+      const updated = await blogService.update(event.id,
         { ...omit(event, ['creator']), likes: event.likes + 1 })
-      .then(updated => {
-        // the blogs will change orders. should sort,
-        // use splitting according to find and findindex
-        // and concat if wanted add-order. Though Rest.
-        setBlogs(
-          blogs
-            .filter(b => b.id !== updated.id)
-            .concat({ ...updated, creator: event.creator, creatorUname: event.user.creatorUname })
-            .sort((a, b) => b.likes - a.likes)
-        )
-        notifyUser(`the blog ${event.title} got a like`)
-      })
-      .catch(error =>
-        notifyUserOfError(
-          `The blog could be not be liked, ${error}`
-        )
+      setBlogs(
+        blogs
+          .filter(b => b.id !== updated.id)
+          .concat({
+            ...updated,
+            creator: blogCreator.creator,
+            creatorUname: blogCreator.creatorUname
+          })
+          .sort((a, b) => b.likes - a.likes)
       )
+      notifyUser(`the blog ${event.title} got a like`)
+    } catch (error) {
+      notifyUserOfError(
+        `The blog could be not be liked, ${error}`
+      )
+    }
   }
+
 
   const handleLogin = async event => {
     event.preventDefault()

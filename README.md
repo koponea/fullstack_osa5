@@ -68,7 +68,7 @@ Tehtävät 5.5.-5.11. Näkymän osien togglailua, esim Uusi -lomake/form näkyy 
 5.17-5.23: stepit 1-7: Playwright-testit Blogilista-appille, projekti, säädöt ja ensimmäiset caset, loginin tarkistus ja login. Kirjautunut käyttäjä pystyy luomaan blogin, ja sitä pystytään likettämään. Käyttäjä joka ei ole luonut kyseistä blogia ei saa nähdä poistonappulaa (fe-muutos myös). Delete ja window-confirm -dialogin käsittely blogin luojan poistaessa blogin. Viimeisenä testinä blogien verifiointiskenaario, jossa käyttäjä likettelee blogeja ja ne itsestäänjärjestyvät näkymään lennossa likejenmukaiseen alenevaan järjestykseen.
 - __5e: FE React router ja tyylikirjastot, PW e2e ja Vitest -säädöt näille__
 5.24-5.28: routed blogs, stepit 1-5: Frontendin säätäminen routatuksi, navigaatiopalkki ja FE-toteutuksen tarkempi refaktorointi komponentteihin. Olemassolevien Vitest ja Playwright -testien korjaaminen ja sovitus kun refaktorointi ja uudet toiminnallisuuden muutokset on tehty.
-(5.29-32: Tyylikirjastot)
+5.29-32: Tyylikirjastot. testien fixaus kun FE ulkonäkö muuttui.
 
 __Huom: Playwright-projektiin kuuluu e2e/.env -tiedosto, katso käyttöohjeet e2e/example.env -tiedostosta__
 
